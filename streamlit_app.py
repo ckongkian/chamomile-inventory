@@ -1306,19 +1306,19 @@ def show_dashboard():
         today = datetime.now().strftime("%Y-%m-%d")
         week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         
-        df_sales = pd.DataFrame(st.session_state.sales_data)
-        df_sales["Total"] = df_sales["quantity"] * df_sales["unit_price"]
+        df_sales_full = pd.DataFrame(st.session_state.sales_data)
+        df_sales_full["Total"] = df_sales_full["quantity"] * df_sales_full["unit_price"]
         
         with col1:
-            today_sales = df_sales[df_sales["date"] == today]["Total"].sum()
+            today_sales = df_sales_full[df_sales_full["date"] == today]["Total"].sum()
             st.metric("Today's Sales", f"RM {today_sales:.2f}")
         
         with col2:
-            week_sales = df_sales[df_sales["date"] >= week_ago]["Total"].sum()
+            week_sales = df_sales_full[df_sales_full["date"] >= week_ago]["Total"].sum()
             st.metric("This Week", f"RM {week_sales:.2f}")
         
         with col3:
-            avg_daily = df_sales.groupby("date")["Total"].sum().mean() if len(df_sales) > 0 else 0
+            avg_daily = df_sales_full.groupby("date")["Total"].sum().mean() if len(df_sales_full) > 0 else 0
             st.metric("Daily Average", f"RM {avg_daily:.2f}")
     else:
         st.info("💡 No sales recorded yet. Use the Sales page to start tracking!")
