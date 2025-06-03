@@ -1,794 +1,3 @@
-def show_sales_entry_inline():
-    """Inline sales entry for dashboard"""
-    try:
-        with st.expander("📝 Quick Sale Entry", expanded=False):
-            with st.form("inline_sales_form", clear_on_submit=True):
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    available_products = [name for name, item in st.session_state.inventory_data.items() if item["current_stock"] > 0]
-                    
-                    if not available_products:
-                        st.error("❌ No products available for sale!")
-                        product = None
-                    else:
-                        product = st.selectbox("🌼 Product", available_products, key="inline_product")
-                
-                with col2:
-                    if product:
-                        max_qty = st.session_state.inventory_data[product]["current_stock"]
-                        quantity = st.number_input(f"📊 Qty (Max: {max_qty})", min_value=1, max_value=max_qty, step=1, value=1, key="inline_qty")
-                        default_price = st.session_state.inventory_data[product]["unit_price"]
-                    else:
-                        quantity = 1
-                        default_price = 0.0
-                
-                with col3:
-                    unit_price = st.number_input("💵 Price (RM)", min_value=0.0, value=default_price, step=0.01, format="%.2f", key="inline_price")
-                    
-                submitted = st.form_submit_button("🛒 Record Sale", type="primary", use_container_width=True)
-                
-                if submitted and product and quantity > 0:
-                    # Add to sales data
-                    sale_record = {
-                        "date": datetime.now().strftime("%Y-%m-%d"),
-                        "item": product,
-                        "quantity": quantity,
-                        "unit_price": unit_price,
-                        "customer": "Walk-in",
-                        "notes": "",
-                        "timestamp": datetime.now().strftime("%H:%M:%S")
-                    }
-                    st.session_state.sales_data.append(sale_record)
-                    
-                    # Update inventory
-                    st.session_state.inventory_data[product]["current_stock"] -= quantity
-                    
-                    total_amount = quantity * unit_price
-                    st.success(f"✅ Sale recorded: {quantity} x {product} for RM {total_amount:.2f}")
-                    
-                    # Check stock level
-                    remaining = st.session_state.inventory_data[product]["current_stock"]
-                    min_stock = st.session_state.inventory_data[product]["min_stock"]
-                    
-                    if remaining <= min_stock:
-                        st.warning(f"⚠️ {product} is now at low stock level: {remaining} units remaining!")
-                    
-                    st.rerun()
-    
-    except Exception as e:
-        st.error(f"Sales entry error: {str(e)}")
-
-def calculate_kpis():
-    """Calculate all inventory KPIs"""
-    try:
-        inventory_data = st.session_state.inventory_data
-        sales_data = st.session_state.sales_data
-        
-        kpis = {}
-        
-        # Calculate total values
-        total_inventory_value = sum(item["current_stock"] * item["unit_cost"] for item in inventory_data.values())
-        total_inventory_units = sum(item["current_stock"] for item in inventory_data.values())
-        
-        if sales_data:
-            df_sales = pd.DataFrame(sales_data)
-            df_sales["total_revenue"] = df_sales["quantity"] * df_sales["unit_price"]
-            
-            # Calculate COGS (Cost of Goods Sold)
-            total_cogs = 0
-            for sale in sales_data:
-                item_name = sale["item"]
-                if item_name in inventory_data:
-                    item_cost = inventory_data[item_name]["unit_cost"]
-                    total_cogs += sale["quantity"] * item_cost
-            
-            # 1. Inventory Turnover Ratio
-            if total_inventory_value > 0:
-                kpis["inventory_turnover"] = total_cogs / total_inventory_value
-            else:
-                kpis["inventory_turnover"] = 0
-            
-            # 2. Average Inventory (simplified - using current as proxy)
-            kpis["average_inventory"] = total_inventory_value
-            
-            # 3. Stockouts
-            out_of_stock_items = [name for name, item in inventory_data.items() if item["current_stock"] == 0]
-            kpis["stockout_rate"] = (len(out_of_stock_items) / len(inventory_data)) * 100 if len(inventory_data) > 0 else 0
-            
-            # 4. Sell-Through Rate (simplified calculation)
-            total_sold = df_sales["quantity"].sum()
-            total_available = total_inventory_units + total_sold
-            kpis["sell_through_rate"] = (total_sold / total_available) * 100 if total_available > 0 else 0
-            
-            # 5. Holding Costs (simplified as 2% of inventory value per month)
-            kpis["holding_cost_percentage"] = 2.0  # 2% monthly holding cost
-            kpis["holding_cost_amount"] = total_inventory_value * 0.02
-            
-            # 6. Days Sales of Inventory (DSI)
-            if total_cogs > 0:
-                kpis["dsi"] = (total_inventory_value / total_cogs) * 365
-            else:
-                kpis["dsi"] = 365  # Default if no sales
-            
-            # 7. Demand Forecast Accuracy (simplified - based on stockouts)
-            kpis["forecast_accuracy"] = max(0, 100 - kpis["stockout_rate"])
-            
-            # 8. Inventory Accuracy (assuming 98% accuracy as default)
-            kpis["inventory_accuracy"] = 98.5
-            
-            # 9. Service Level (based on availability)
-            kpis["service_level"] = 100 - kpis["stockout_rate"]
-            
-            # 10. Gross Margin by Product
-            total_revenue = df_sales["total_revenue"].sum()
-            kpis["overall_gross_margin"] = ((total_revenue - total_cogs) / total_revenue) * 100 if total_revenue > 0 else 0
-            
-        else:
-            # Default values when no sales data
-            kpis = {
-                "inventory_turnover": 0,
-                "average_inventory": total_inventory_value,
-                "stockout_rate": (len([name for name, item in inventory_data.items() if item["current_stock"] == 0]) / len(inventory_data)) * 100,
-                "sell_through_rate": 0,
-                "holding_cost_percentage": 2.0,
-                "holding_cost_amount": total_inventory_value * 0.02,
-                "dsi": 365,
-                "forecast_accuracy": 85,
-                "inventory_accuracy": 98.5,
-                "service_level": 95,
-                "overall_gross_margin": 0
-            }
-        
-        return kpis
-    
-    except Exception as e:
-        st.error(f"KPI calculation error: {str(e)}")
-        return {}
-
-def show_analytics():
-    try:
-        st.markdown("""
-        <div class="chamomile-header">
-            <h1>📈 Business Analytics & KPIs</h1>
-            <p>Comprehensive inventory performance metrics and insights</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Calculate KPIs
-        kpis = calculate_kpis()
-        
-        if not kpis:
-            st.error("Unable to calculate KPIs. Please check your data.")
-            return
-        
-        # KPI Overview
-        st.markdown('<div class="section-header">📊 Key Performance Indicators</div>', unsafe_allow_html=True)
-        
-        # Row 1: Core Inventory Metrics
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            turnover_color = "normal" if kpis["inventory_turnover"] >= 2 else "inverse"
-            st.metric(
-                "📈 Inventory Turnover Ratio", 
-                f"{kpis['inventory_turnover']:.2f}x",
-                delta="Good" if kpis["inventory_turnover"] >= 2 else "Needs Improvement",
-                delta_color=turnover_color
-            )
-        
-        with col2:
-            dsi_color = "inverse" if kpis["dsi"] > 60 else "normal"
-            st.metric(
-                "📅 Days Sales Inventory", 
-                f"{kpis['dsi']:.0f} days",
-                delta="Good" if kpis["dsi"] <= 60 else "High",
-                delta_color=dsi_color
-            )
-        
-        with col3:
-            stockout_color = "inverse" if kpis["stockout_rate"] > 5 else "normal"
-            st.metric(
-                "🚨 Stockout Rate", 
-                f"{kpis['stockout_rate']:.1f}%",
-                delta="Critical" if kpis["stockout_rate"] > 10 else "Acceptable",
-                delta_color=stockout_color
-            )
-        
-        with col4:
-            service_color = "normal" if kpis["service_level"] >= 95 else "inverse"
-            st.metric(
-                "✅ Service Level", 
-                f"{kpis['service_level']:.1f}%",
-                delta="Excellent" if kpis["service_level"] >= 98 else "Good",
-                delta_color=service_color
-            )
-        
-        # Row 2: Financial Metrics
-        col5, col6, col7, col8 = st.columns(4)
-        
-        with col5:
-            margin_color = "normal" if kpis["overall_gross_margin"] >= 20 else "inverse"
-            st.metric(
-                "💰 Gross Margin", 
-                f"{kpis['overall_gross_margin']:.1f}%",
-                delta="Strong" if kpis["overall_gross_margin"] >= 30 else "Fair",
-                delta_color=margin_color
-            )
-        
-        with col6:
-            st.metric(
-                "💼 Holding Cost", 
-                f"RM {kpis['holding_cost_amount']:.2f}",
-                delta=f"{kpis['holding_cost_percentage']:.1f}% of inventory"
-            )
-        
-        with col7:
-            sell_through_color = "normal" if kpis["sell_through_rate"] >= 60 else "inverse"
-            st.metric(
-                "📊 Sell-Through Rate", 
-                f"{kpis['sell_through_rate']:.1f}%",
-                delta="Healthy" if kpis["sell_through_rate"] >= 70 else "Monitor",
-                delta_color=sell_through_color
-            )
-        
-        with col8:
-            accuracy_color = "normal" if kpis["inventory_accuracy"] >= 95 else "inverse"
-            st.metric(
-                "🎯 Inventory Accuracy", 
-                f"{kpis['inventory_accuracy']:.1f}%",
-                delta="Excellent" if kpis["inventory_accuracy"] >= 98 else "Good",
-                delta_color=accuracy_color
-            )
-        
-        # Detailed Analysis Tabs
-        tab1, tab2, tab3, tab4 = st.tabs(["📊 Performance Analysis", "📈 Trends & Insights", "🎯 Product Performance", "⚠️ Recommendations"])
-        
-        with tab1:
-            show_performance_analysis(kpis)
-        
-        with tab2:
-            show_trends_insights()
-        
-        with tab3:
-            show_product_performance()
-        
-        with tab4:
-            show_recommendations(kpis)
-    
-    except Exception as e:
-        st.error(f"Analytics error: {str(e)}")
-
-def show_performance_analysis(kpis):
-    """Detailed performance analysis"""
-    try:
-        st.markdown("### 📊 Detailed Performance Analysis")
-        
-        # Performance gauge charts using text-based indicators
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 🎯 Inventory Health Score")
-            
-            # Calculate overall health score
-            health_factors = [
-                min(100, kpis["service_level"]),  # Service level
-                max(0, 100 - kpis["stockout_rate"] * 2),  # Stockout penalty
-                min(100, kpis["inventory_accuracy"]),  # Accuracy
-                min(100, kpis["sell_through_rate"]),  # Sell-through
-            ]
-            health_score = sum(health_factors) / len(health_factors)
-            
-            if health_score >= 85:
-                health_status = "🟢 Excellent"
-                health_color = "#25D366"
-            elif health_score >= 70:
-                health_status = "🟡 Good"
-                health_color = "#E6C383"
-            else:
-                health_status = "🔴 Needs Improvement"
-                health_color = "#dc2626"
-            
-            st.markdown(f"""
-            <div style="background: white; padding: 1.5rem; border-radius: 10px; border: 3px solid {health_color}; text-align: center;">
-                <h2 style="color: {health_color}; margin: 0;">{health_score:.1f}/100</h2>
-                <p style="color: #5A3E36; margin: 0.5rem 0 0 0; font-weight: 600;">{health_status}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("#### 💡 Key Insights")
-            
-            insights = []
-            
-            if kpis["dsi"] > 90:
-                insights.append("⚠️ High DSI indicates slow-moving inventory")
-            elif kpis["dsi"] < 30:
-                insights.append("🚀 Low DSI shows efficient inventory turnover")
-            
-            if kpis["stockout_rate"] > 10:
-                insights.append("🚨 High stockout rate affecting customer satisfaction")
-            elif kpis["stockout_rate"] < 2:
-                insights.append("✅ Excellent stock availability")
-            
-            if kpis["overall_gross_margin"] > 30:
-                insights.append("💰 Strong profit margins")
-            elif kpis["overall_gross_margin"] < 15:
-                insights.append("📉 Profit margins need improvement")
-            
-            if not insights:
-                insights.append("📊 Performance metrics are within normal ranges")
-            
-            for insight in insights:
-                st.info(insight)
-        
-        # KPI Definitions
-        st.markdown("#### 📚 KPI Definitions & Benchmarks")
-        
-        with st.expander("📖 Understanding Your KPIs"):
-            st.markdown("""
-            **📈 Inventory Turnover Ratio:** Measures how often inventory is sold and replaced
-            - **Good:** 2-6x annually | **Excellent:** 6+x annually
-            
-            **📅 Days Sales of Inventory (DSI):** Average days to sell entire inventory
-            - **Good:** 30-60 days | **Monitor:** 60+ days
-            
-            **🚨 Stockout Rate:** Percentage of products out of stock
-            - **Target:** <5% | **Critical:** >10%
-            
-            **✅ Service Level:** Percentage of demand met without stockouts
-            - **Good:** 90-95% | **Excellent:** 95%+
-            
-            **💰 Gross Margin:** Profit percentage per product
-            - **Fair:** 15-25% | **Strong:** 25%+ | **Excellent:** 40%+
-            
-            **📊 Sell-Through Rate:** Percentage of inventory sold
-            - **Target:** 60-80% | **Excellent:** 80%+
-            """)
-    
-    except Exception as e:
-        st.error(f"Performance analysis error: {str(e)}")
-
-def show_trends_insights():
-    """Show trends and insights"""
-    try:
-        st.markdown("### 📈 Trends & Insights")
-        
-        if st.session_state.sales_data:
-            df_sales = pd.DataFrame(st.session_state.sales_data)
-            df_sales["date"] = pd.to_datetime(df_sales["date"])
-            df_sales["total"] = df_sales["quantity"] * df_sales["unit_price"]
-            
-            # Sales trend
-            daily_sales = df_sales.groupby(df_sales["date"].dt.date)["total"].sum().reset_index()
-            daily_sales.columns = ["Date", "Sales"]
-            
-            if len(daily_sales) > 1:
-                # Create a simple chart using Plotly
-                fig = px.line(daily_sales, x="Date", y="Sales", 
-                             title="📈 Daily Sales Trend",
-                             color_discrete_sequence=["#E6C383"])
-                fig.update_layout(
-                    plot_bgcolor="white",
-                    paper_bgcolor="white",
-                    font_color="#5A3E36"
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            
-            # Top selling products
-            st.markdown("#### 🏆 Top Selling Products")
-            product_sales = df_sales.groupby("item").agg({
-                "quantity": "sum",
-                "total": "sum"
-            }).reset_index()
-            product_sales = product_sales.sort_values("total", ascending=False).head(10)
-            product_sales.columns = ["Product", "Units Sold", "Revenue (RM)"]
-            
-            st.dataframe(
-                product_sales,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Revenue (RM)": st.column_config.NumberColumn(format="%.2f")
-                }
-            )
-        else:
-            st.info("📊 Sales trends will appear here once you start recording sales data.")
-    
-    except Exception as e:
-        st.error(f"Trends analysis error: {str(e)}")
-
-def show_product_performance():
-    """Show individual product performance"""
-    try:
-        st.markdown("### 🎯 Product Performance Analysis")
-        
-        inventory_data = st.session_state.inventory_data
-        
-        # Create product performance dataframe
-        product_performance = []
-        
-        for name, item in inventory_data.items():
-            # Calculate individual product metrics
-            stock_status = get_stock_status(item["current_stock"], item["min_stock"])
-            stock_coverage = (item["current_stock"] / item["max_stock"]) * 100 if item["max_stock"] > 0 else 0
-            
-            # Calculate sales for this product
-            product_sales = [sale for sale in st.session_state.sales_data if sale["item"] == name]
-            units_sold = sum(sale["quantity"] for sale in product_sales)
-            revenue = sum(sale["quantity"] * sale["unit_price"] for sale in product_sales)
-            
-            # Calculate product gross margin
-            if revenue > 0:
-                cogs = units_sold * item["unit_cost"]
-                gross_margin = ((revenue - cogs) / revenue) * 100
-            else:
-                gross_margin = 0
-            
-            # Calculate inventory value
-            inventory_value = item["current_stock"] * item["unit_cost"]
-            
-            product_performance.append({
-                "Product": name,
-                "Category": item["category"],
-                "Current Stock": item["current_stock"],
-                "Stock Status": stock_status,
-                "Stock Coverage (%)": stock_coverage,
-                "Units Sold": units_sold,
-                "Revenue (RM)": revenue,
-                "Gross Margin (%)": gross_margin,
-                "Inventory Value (RM)": inventory_value,
-                "Supplier": item["supplier"]
-            })
-        
-        df_performance = pd.DataFrame(product_performance)
-        
-        # Display filters
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            category_filter = st.selectbox("Filter by Category", 
-                                         ["All"] + list(df_performance["Category"].unique()))
-        
-        with col2:
-            status_filter = st.selectbox("Filter by Stock Status", 
-                                       ["All", "Critical", "Low", "Normal"])
-        
-        with col3:
-            sort_by = st.selectbox("Sort by", 
-                                 ["Revenue", "Units Sold", "Gross Margin", "Stock Coverage"])
-        
-        # Apply filters
-        filtered_df = df_performance.copy()
-        
-        if category_filter != "All":
-            filtered_df = filtered_df[filtered_df["Category"] == category_filter]
-        
-        if status_filter != "All":
-            filtered_df = filtered_df[filtered_df["Stock Status"] == status_filter]
-        
-        # Sort data
-        if sort_by == "Revenue":
-            filtered_df = filtered_df.sort_values("Revenue (RM)", ascending=False)
-        elif sort_by == "Units Sold":
-            filtered_df = filtered_df.sort_values("Units Sold", ascending=False)
-        elif sort_by == "Gross Margin":
-            filtered_df = filtered_df.sort_values("Gross Margin (%)", ascending=False)
-        elif sort_by == "Stock Coverage":
-            filtered_df = filtered_df.sort_values("Stock Coverage (%)", ascending=False)
-        
-        # Display table
-        st.dataframe(
-            filtered_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Revenue (RM)": st.column_config.NumberColumn(format="%.2f"),
-                "Gross Margin (%)": st.column_config.NumberColumn(format="%.1f"),
-                "Stock Coverage (%)": st.column_config.NumberColumn(format="%.1f"),
-                "Inventory Value (RM)": st.column_config.NumberColumn(format="%.2f")
-            }
-        )
-        
-        # Performance insights
-        st.markdown("#### 💡 Product Insights")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Top performers
-            top_revenue = df_performance.nlargest(3, "Revenue (RM)")["Product"].tolist()
-            top_margin = df_performance.nlargest(3, "Gross Margin (%)")["Product"].tolist()
-            
-            st.markdown("**🏆 Top Performers**")
-            st.success(f"**Revenue Leaders:** {', '.join(top_revenue[:3])}")
-            if any(margin > 0 for margin in df_performance["Gross Margin (%)"]):
-                st.success(f"**Margin Leaders:** {', '.join(top_margin[:3])}")
-        
-        with col2:
-            # Needs attention
-            critical_items = df_performance[df_performance["Stock Status"] == "Critical"]["Product"].tolist()
-            low_performers = df_performance[df_performance["Units Sold"] == 0]["Product"].tolist()
-            
-            st.markdown("**⚠️ Needs Attention**")
-            if critical_items:
-                st.error(f"**Critical Stock:** {', '.join(critical_items[:3])}")
-            if low_performers:
-                st.warning(f"**No Sales:** {', '.join(low_performers[:3])}")
-    
-    except Exception as e:
-        st.error(f"Product performance error: {str(e)}")
-
-def show_recommendations(kpis):
-    """Show actionable recommendations based on KPIs"""
-    try:
-        st.markdown("### ⚠️ Actionable Recommendations")
-        
-        recommendations = []
-        
-        # Inventory turnover recommendations
-        if kpis["inventory_turnover"] < 1:
-            recommendations.append({
-                "priority": "🔴 High",
-                "category": "Inventory Turnover",
-                "issue": "Very low inventory turnover",
-                "action": "Consider promotions, discounts, or product bundling to increase sales velocity",
-                "impact": "Reduce holding costs and improve cash flow"
-            })
-        elif kpis["inventory_turnover"] < 2:
-            recommendations.append({
-                "priority": "🟡 Medium",
-                "category": "Inventory Turnover",
-                "issue": "Below optimal inventory turnover",
-                "action": "Review product mix and implement targeted marketing campaigns",
-                "impact": "Improve inventory efficiency"
-            })
-        
-        # DSI recommendations
-        if kpis["dsi"] > 90:
-            recommendations.append({
-                "priority": "🔴 High",
-                "category": "Days Sales Inventory",
-                "issue": "High DSI indicates slow-moving inventory",
-                "action": "Identify slow-moving products and implement clearance strategies",
-                "impact": "Reduce inventory holding period and costs"
-            })
-        elif kpis["dsi"] > 60:
-            recommendations.append({
-                "priority": "🟡 Medium",
-                "category": "Days Sales Inventory",
-                "issue": "DSI above optimal range",
-                "action": "Review demand forecasting and adjust procurement schedules",
-                "impact": "Optimize inventory levels"
-            })
-        
-        # Stockout recommendations
-        if kpis["stockout_rate"] > 10:
-            recommendations.append({
-                "priority": "🔴 High",
-                "category": "Stock Management",
-                "issue": "High stockout rate affecting customer satisfaction",
-                "action": "Implement safety stock levels and improve demand forecasting",
-                "impact": "Improve customer satisfaction and sales"
-            })
-        elif kpis["stockout_rate"] > 5:
-            recommendations.append({
-                "priority": "🟡 Medium",
-                "category": "Stock Management",
-                "issue": "Moderate stockout rate",
-                "action": "Review minimum stock levels for frequently sold items",
-                "impact": "Reduce lost sales opportunities"
-            })
-        
-        # Margin recommendations
-        if kpis["overall_gross_margin"] < 15:
-            recommendations.append({
-                "priority": "🔴 High",
-                "category": "Profitability",
-                "issue": "Low gross margins affecting profitability",
-                "action": "Review pricing strategy and negotiate better supplier terms",
-                "impact": "Improve overall profitability"
-            })
-        elif kpis["overall_gross_margin"] < 25:
-            recommendations.append({
-                "priority": "🟡 Medium",
-                "category": "Profitability",
-                "issue": "Margins could be improved",
-                "action": "Analyze product-level margins and optimize pricing",
-                "impact": "Increase profit margins"
-            })
-        
-        # Service level recommendations
-        if kpis["service_level"] < 90:
-            recommendations.append({
-                "priority": "🔴 High",
-                "category": "Customer Service",
-                "issue": "Low service level affecting customer experience",
-                "action": "Implement automated reorder points and safety stock",
-                "impact": "Improve customer satisfaction and retention"
-            })
-        
-        # Holding cost recommendations
-        if kpis["holding_cost_amount"] > 1000:
-            recommendations.append({
-                "priority": "🟡 Medium",
-                "category": "Cost Management",
-                "issue": "High inventory holding costs",
-                "action": "Optimize inventory levels and improve turnover",
-                "impact": "Reduce operational costs"
-            })
-        
-        # Display recommendations
-        if recommendations:
-            for i, rec in enumerate(recommendations):
-                with st.expander(f"{rec['priority']} {rec['category']}: {rec['issue']}", expanded=i==0):
-                    col1, col2 = st.columns([2, 1])
-                    
-                    with col1:
-                        st.markdown(f"**📋 Recommended Action:**")
-                        st.info(rec['action'])
-                        
-                        st.markdown(f"**🎯 Expected Impact:**")
-                        st.success(rec['impact'])
-                    
-                    with col2:
-                        st.markdown(f"**Priority Level:**")
-                        st.markdown(rec['priority'])
-                        
-                        if rec['priority'] == "🔴 High":
-                            st.error("Immediate attention required")
-                        elif rec['priority'] == "🟡 Medium":
-                            st.warning("Address within 1-2 weeks")
-                        else:
-                            st.info("Monitor and plan")
-        else:
-            st.success("🎉 Great job! Your inventory metrics are performing well. Keep monitoring for continuous improvement.")
-        
-        # General best practices
-        st.markdown("#### 📚 General Best Practices")
-        
-        with st.expander("💡 Inventory Management Tips"):
-            st.markdown("""
-            **🔄 Regular Reviews:**
-            - Review inventory levels weekly
-            - Analyze sales patterns monthly
-            - Adjust reorder points seasonally
-            
-            **📊 Data-Driven Decisions:**
-            - Use historical sales data for forecasting
-            - Monitor KPIs consistently
-            - Set up automated alerts for critical levels
-            
-            **🤝 Supplier Management:**
-            - Maintain good supplier relationships
-            - Negotiate favorable payment terms
-            - Have backup suppliers for critical items
-            
-            **💰 Cost Optimization:**
-            - Regularly review pricing strategies
-            - Optimize order quantities
-            - Minimize holding costs while maintaining service levels
-            
-            **📈 Growth Strategies:**
-            - Focus on high-margin products
-            - Identify and eliminate slow-moving inventory
-            - Implement cross-selling and upselling opportunities
-            """)
-    
-    except Exception as e:
-        st.error(f"Recommendations error: {str(e)}")
-
-def show_settings():
-    st.markdown("""
-    <div class="chamomile-header">
-        <h1>⚙️ Settings</h1>
-        <p>Configure your system preferences and data management</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    tab1, tab2, tab3 = st.tabs(["🔧 System Settings", "📊 Data Management", "🔄 Backup & Restore"])
-    
-    with tab1:
-        st.markdown("### 🔧 System Configuration")
-        
-        st.markdown("#### 📱 Display Settings")
-        currency = st.selectbox("Currency", ["RM (Malaysian Ringgit)", "USD", "EUR", "SGD"], index=0)
-        decimal_places = st.selectbox("Decimal Places", [0, 1, 2], index=2)
-        
-        st.markdown("#### ⚠️ Alert Thresholds")
-        col1, col2 = st.columns(2)
-        with col1:
-            low_stock_threshold = st.slider("Low Stock Alert (%)", 10, 50, 20)
-        with col2:
-            critical_stock_days = st.slider("Critical Stock Days", 1, 10, 3)
-        
-        if st.button("💾 Save Settings"):
-            st.success("✅ Settings saved successfully!")
-    
-    with tab2:
-        st.markdown("### 📊 Data Management")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 📤 Export Data")
-            if st.button("📋 Export Inventory Data"):
-                df_inventory = pd.DataFrame.from_dict(st.session_state.inventory_data, orient='index')
-                csv = df_inventory.to_csv()
-                st.download_button(
-                    label="⬇️ Download Inventory CSV",
-                    data=csv,
-                    file_name=f"inventory_export_{datetime.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv"
-                )
-            
-            if st.button("💰 Export Sales Data"):
-                if st.session_state.sales_data:
-                    df_sales = pd.DataFrame(st.session_state.sales_data)
-                    csv = df_sales.to_csv(index=False)
-                    st.download_button(
-                        label="⬇️ Download Sales CSV",
-                        data=csv,
-                        file_name=f"sales_export_{datetime.now().strftime('%Y%m%d')}.csv",
-                        mime="text/csv"
-                    )
-                else:
-                    st.info("No sales data to export")
-        
-        with col2:
-            st.markdown("#### 🗑️ Data Cleanup")
-            st.warning("⚠️ These actions cannot be undone!")
-            
-            if st.button("🧹 Clear Old Sales Data (>30 days)"):
-                cutoff_date = datetime.now() - timedelta(days=30)
-                original_count = len(st.session_state.sales_data)
-                st.session_state.sales_data = [
-                    sale for sale in st.session_state.sales_data 
-                    if datetime.strptime(sale["date"], "%Y-%m-%d") > cutoff_date
-                ]
-                removed = original_count - len(st.session_state.sales_data)
-                st.success(f"✅ Removed {removed} old sales records")
-    
-    with tab3:
-        st.markdown("### 🔄 Backup & Restore")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("#### 💾 Backup Data")
-            backup_data = {
-                "inventory_data": st.session_state.inventory_data,
-                "sales_data": st.session_state.sales_data,
-                "backup_date": datetime.now().isoformat()
-            }
-            backup_json = json.dumps(backup_data, indent=2)
-            
-            st.download_button(
-                label="📦 Download Complete Backup",
-                data=backup_json,
-                file_name=f"chamomile_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                mime="application/json"
-            )
-        
-        with col2:
-            st.markdown("#### 📂 Restore Data")
-            uploaded_file = st.file_uploader("Choose backup file", type="json")
-            
-            if uploaded_file is not None:
-                try:
-                    backup_data = json.load(uploaded_file)
-                    
-                    if st.button("🔄 Restore from Backup"):
-                        st.session_state.inventory_data = backup_data.get("inventory_data", {})
-                        st.session_state.sales_data = backup_data.get("sales_data", [])
-                        st.success("✅ Data restored successfully!")
-                        st.rerun()
-                        
-                except Exception as e:
-                    st.error(f"❌ Error reading backup file: {str(e)}")
-
-if __name__ == "__main__":
-    main()import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -1784,3 +993,794 @@ def show_update_stock():
 
 if __name__ == "__main__":
     main()
+def show_sales_entry_inline():
+    """Inline sales entry for dashboard"""
+    try:
+        with st.expander("📝 Quick Sale Entry", expanded=False):
+            with st.form("inline_sales_form", clear_on_submit=True):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    available_products = [name for name, item in st.session_state.inventory_data.items() if item["current_stock"] > 0]
+                    
+                    if not available_products:
+                        st.error("❌ No products available for sale!")
+                        product = None
+                    else:
+                        product = st.selectbox("🌼 Product", available_products, key="inline_product")
+                
+                with col2:
+                    if product:
+                        max_qty = st.session_state.inventory_data[product]["current_stock"]
+                        quantity = st.number_input(f"📊 Qty (Max: {max_qty})", min_value=1, max_value=max_qty, step=1, value=1, key="inline_qty")
+                        default_price = st.session_state.inventory_data[product]["unit_price"]
+                    else:
+                        quantity = 1
+                        default_price = 0.0
+                
+                with col3:
+                    unit_price = st.number_input("💵 Price (RM)", min_value=0.0, value=default_price, step=0.01, format="%.2f", key="inline_price")
+                    
+                submitted = st.form_submit_button("🛒 Record Sale", type="primary", use_container_width=True)
+                
+                if submitted and product and quantity > 0:
+                    # Add to sales data
+                    sale_record = {
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "item": product,
+                        "quantity": quantity,
+                        "unit_price": unit_price,
+                        "customer": "Walk-in",
+                        "notes": "",
+                        "timestamp": datetime.now().strftime("%H:%M:%S")
+                    }
+                    st.session_state.sales_data.append(sale_record)
+                    
+                    # Update inventory
+                    st.session_state.inventory_data[product]["current_stock"] -= quantity
+                    
+                    total_amount = quantity * unit_price
+                    st.success(f"✅ Sale recorded: {quantity} x {product} for RM {total_amount:.2f}")
+                    
+                    # Check stock level
+                    remaining = st.session_state.inventory_data[product]["current_stock"]
+                    min_stock = st.session_state.inventory_data[product]["min_stock"]
+                    
+                    if remaining <= min_stock:
+                        st.warning(f"⚠️ {product} is now at low stock level: {remaining} units remaining!")
+                    
+                    st.rerun()
+    
+    except Exception as e:
+        st.error(f"Sales entry error: {str(e)}")
+
+def calculate_kpis():
+    """Calculate all inventory KPIs"""
+    try:
+        inventory_data = st.session_state.inventory_data
+        sales_data = st.session_state.sales_data
+        
+        kpis = {}
+        
+        # Calculate total values
+        total_inventory_value = sum(item["current_stock"] * item["unit_cost"] for item in inventory_data.values())
+        total_inventory_units = sum(item["current_stock"] for item in inventory_data.values())
+        
+        if sales_data:
+            df_sales = pd.DataFrame(sales_data)
+            df_sales["total_revenue"] = df_sales["quantity"] * df_sales["unit_price"]
+            
+            # Calculate COGS (Cost of Goods Sold)
+            total_cogs = 0
+            for sale in sales_data:
+                item_name = sale["item"]
+                if item_name in inventory_data:
+                    item_cost = inventory_data[item_name]["unit_cost"]
+                    total_cogs += sale["quantity"] * item_cost
+            
+            # 1. Inventory Turnover Ratio
+            if total_inventory_value > 0:
+                kpis["inventory_turnover"] = total_cogs / total_inventory_value
+            else:
+                kpis["inventory_turnover"] = 0
+            
+            # 2. Average Inventory (simplified - using current as proxy)
+            kpis["average_inventory"] = total_inventory_value
+            
+            # 3. Stockouts
+            out_of_stock_items = [name for name, item in inventory_data.items() if item["current_stock"] == 0]
+            kpis["stockout_rate"] = (len(out_of_stock_items) / len(inventory_data)) * 100 if len(inventory_data) > 0 else 0
+            
+            # 4. Sell-Through Rate (simplified calculation)
+            total_sold = df_sales["quantity"].sum()
+            total_available = total_inventory_units + total_sold
+            kpis["sell_through_rate"] = (total_sold / total_available) * 100 if total_available > 0 else 0
+            
+            # 5. Holding Costs (simplified as 2% of inventory value per month)
+            kpis["holding_cost_percentage"] = 2.0  # 2% monthly holding cost
+            kpis["holding_cost_amount"] = total_inventory_value * 0.02
+            
+            # 6. Days Sales of Inventory (DSI)
+            if total_cogs > 0:
+                kpis["dsi"] = (total_inventory_value / total_cogs) * 365
+            else:
+                kpis["dsi"] = 365  # Default if no sales
+            
+            # 7. Demand Forecast Accuracy (simplified - based on stockouts)
+            kpis["forecast_accuracy"] = max(0, 100 - kpis["stockout_rate"])
+            
+            # 8. Inventory Accuracy (assuming 98% accuracy as default)
+            kpis["inventory_accuracy"] = 98.5
+            
+            # 9. Service Level (based on availability)
+            kpis["service_level"] = 100 - kpis["stockout_rate"]
+            
+            # 10. Gross Margin by Product
+            total_revenue = df_sales["total_revenue"].sum()
+            kpis["overall_gross_margin"] = ((total_revenue - total_cogs) / total_revenue) * 100 if total_revenue > 0 else 0
+            
+        else:
+            # Default values when no sales data
+            kpis = {
+                "inventory_turnover": 0,
+                "average_inventory": total_inventory_value,
+                "stockout_rate": (len([name for name, item in inventory_data.items() if item["current_stock"] == 0]) / len(inventory_data)) * 100,
+                "sell_through_rate": 0,
+                "holding_cost_percentage": 2.0,
+                "holding_cost_amount": total_inventory_value * 0.02,
+                "dsi": 365,
+                "forecast_accuracy": 85,
+                "inventory_accuracy": 98.5,
+                "service_level": 95,
+                "overall_gross_margin": 0
+            }
+        
+        return kpis
+    
+    except Exception as e:
+        st.error(f"KPI calculation error: {str(e)}")
+        return {}
+
+def show_analytics():
+    try:
+        st.markdown("""
+        <div class="chamomile-header">
+            <h1>📈 Business Analytics & KPIs</h1>
+            <p>Comprehensive inventory performance metrics and insights</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Calculate KPIs
+        kpis = calculate_kpis()
+        
+        if not kpis:
+            st.error("Unable to calculate KPIs. Please check your data.")
+            return
+        
+        # KPI Overview
+        st.markdown('<div class="section-header">📊 Key Performance Indicators</div>', unsafe_allow_html=True)
+        
+        # Row 1: Core Inventory Metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            turnover_color = "normal" if kpis["inventory_turnover"] >= 2 else "inverse"
+            st.metric(
+                "📈 Inventory Turnover Ratio", 
+                f"{kpis['inventory_turnover']:.2f}x",
+                delta="Good" if kpis["inventory_turnover"] >= 2 else "Needs Improvement",
+                delta_color=turnover_color
+            )
+        
+        with col2:
+            dsi_color = "inverse" if kpis["dsi"] > 60 else "normal"
+            st.metric(
+                "📅 Days Sales Inventory", 
+                f"{kpis['dsi']:.0f} days",
+                delta="Good" if kpis["dsi"] <= 60 else "High",
+                delta_color=dsi_color
+            )
+        
+        with col3:
+            stockout_color = "inverse" if kpis["stockout_rate"] > 5 else "normal"
+            st.metric(
+                "🚨 Stockout Rate", 
+                f"{kpis['stockout_rate']:.1f}%",
+                delta="Critical" if kpis["stockout_rate"] > 10 else "Acceptable",
+                delta_color=stockout_color
+            )
+        
+        with col4:
+            service_color = "normal" if kpis["service_level"] >= 95 else "inverse"
+            st.metric(
+                "✅ Service Level", 
+                f"{kpis['service_level']:.1f}%",
+                delta="Excellent" if kpis["service_level"] >= 98 else "Good",
+                delta_color=service_color
+            )
+        
+        # Row 2: Financial Metrics
+        col5, col6, col7, col8 = st.columns(4)
+        
+        with col5:
+            margin_color = "normal" if kpis["overall_gross_margin"] >= 20 else "inverse"
+            st.metric(
+                "💰 Gross Margin", 
+                f"{kpis['overall_gross_margin']:.1f}%",
+                delta="Strong" if kpis["overall_gross_margin"] >= 30 else "Fair",
+                delta_color=margin_color
+            )
+        
+        with col6:
+            st.metric(
+                "💼 Holding Cost", 
+                f"RM {kpis['holding_cost_amount']:.2f}",
+                delta=f"{kpis['holding_cost_percentage']:.1f}% of inventory"
+            )
+        
+        with col7:
+            sell_through_color = "normal" if kpis["sell_through_rate"] >= 60 else "inverse"
+            st.metric(
+                "📊 Sell-Through Rate", 
+                f"{kpis['sell_through_rate']:.1f}%",
+                delta="Healthy" if kpis["sell_through_rate"] >= 70 else "Monitor",
+                delta_color=sell_through_color
+            )
+        
+        with col8:
+            accuracy_color = "normal" if kpis["inventory_accuracy"] >= 95 else "inverse"
+            st.metric(
+                "🎯 Inventory Accuracy", 
+                f"{kpis['inventory_accuracy']:.1f}%",
+                delta="Excellent" if kpis["inventory_accuracy"] >= 98 else "Good",
+                delta_color=accuracy_color
+            )
+        
+        # Detailed Analysis Tabs
+        tab1, tab2, tab3, tab4 = st.tabs(["📊 Performance Analysis", "📈 Trends & Insights", "🎯 Product Performance", "⚠️ Recommendations"])
+        
+        with tab1:
+            show_performance_analysis(kpis)
+        
+        with tab2:
+            show_trends_insights()
+        
+        with tab3:
+            show_product_performance()
+        
+        with tab4:
+            show_recommendations(kpis)
+    
+    except Exception as e:
+        st.error(f"Analytics error: {str(e)}")
+
+def show_performance_analysis(kpis):
+    """Detailed performance analysis"""
+    try:
+        st.markdown("### 📊 Detailed Performance Analysis")
+        
+        # Performance gauge charts using text-based indicators
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 🎯 Inventory Health Score")
+            
+            # Calculate overall health score
+            health_factors = [
+                min(100, kpis["service_level"]),  # Service level
+                max(0, 100 - kpis["stockout_rate"] * 2),  # Stockout penalty
+                min(100, kpis["inventory_accuracy"]),  # Accuracy
+                min(100, kpis["sell_through_rate"]),  # Sell-through
+            ]
+            health_score = sum(health_factors) / len(health_factors)
+            
+            if health_score >= 85:
+                health_status = "🟢 Excellent"
+                health_color = "#25D366"
+            elif health_score >= 70:
+                health_status = "🟡 Good"
+                health_color = "#E6C383"
+            else:
+                health_status = "🔴 Needs Improvement"
+                health_color = "#dc2626"
+            
+            st.markdown(f"""
+            <div style="background: white; padding: 1.5rem; border-radius: 10px; border: 3px solid {health_color}; text-align: center;">
+                <h2 style="color: {health_color}; margin: 0;">{health_score:.1f}/100</h2>
+                <p style="color: #5A3E36; margin: 0.5rem 0 0 0; font-weight: 600;">{health_status}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("#### 💡 Key Insights")
+            
+            insights = []
+            
+            if kpis["dsi"] > 90:
+                insights.append("⚠️ High DSI indicates slow-moving inventory")
+            elif kpis["dsi"] < 30:
+                insights.append("🚀 Low DSI shows efficient inventory turnover")
+            
+            if kpis["stockout_rate"] > 10:
+                insights.append("🚨 High stockout rate affecting customer satisfaction")
+            elif kpis["stockout_rate"] < 2:
+                insights.append("✅ Excellent stock availability")
+            
+            if kpis["overall_gross_margin"] > 30:
+                insights.append("💰 Strong profit margins")
+            elif kpis["overall_gross_margin"] < 15:
+                insights.append("📉 Profit margins need improvement")
+            
+            if not insights:
+                insights.append("📊 Performance metrics are within normal ranges")
+            
+            for insight in insights:
+                st.info(insight)
+        
+        # KPI Definitions
+        st.markdown("#### 📚 KPI Definitions & Benchmarks")
+        
+        with st.expander("📖 Understanding Your KPIs"):
+            st.markdown("""
+            **📈 Inventory Turnover Ratio:** Measures how often inventory is sold and replaced
+            - **Good:** 2-6x annually | **Excellent:** 6+x annually
+            
+            **📅 Days Sales of Inventory (DSI):** Average days to sell entire inventory
+            - **Good:** 30-60 days | **Monitor:** 60+ days
+            
+            **🚨 Stockout Rate:** Percentage of products out of stock
+            - **Target:** <5% | **Critical:** >10%
+            
+            **✅ Service Level:** Percentage of demand met without stockouts
+            - **Good:** 90-95% | **Excellent:** 95%+
+            
+            **💰 Gross Margin:** Profit percentage per product
+            - **Fair:** 15-25% | **Strong:** 25%+ | **Excellent:** 40%+
+            
+            **📊 Sell-Through Rate:** Percentage of inventory sold
+            - **Target:** 60-80% | **Excellent:** 80%+
+            """)
+    
+    except Exception as e:
+        st.error(f"Performance analysis error: {str(e)}")
+
+def show_trends_insights():
+    """Show trends and insights"""
+    try:
+        st.markdown("### 📈 Trends & Insights")
+        
+        if st.session_state.sales_data:
+            df_sales = pd.DataFrame(st.session_state.sales_data)
+            df_sales["date"] = pd.to_datetime(df_sales["date"])
+            df_sales["total"] = df_sales["quantity"] * df_sales["unit_price"]
+            
+            # Sales trend
+            daily_sales = df_sales.groupby(df_sales["date"].dt.date)["total"].sum().reset_index()
+            daily_sales.columns = ["Date", "Sales"]
+            
+            if len(daily_sales) > 1:
+                # Create a simple chart using Plotly
+                fig = px.line(daily_sales, x="Date", y="Sales", 
+                             title="📈 Daily Sales Trend",
+                             color_discrete_sequence=["#E6C383"])
+                fig.update_layout(
+                    plot_bgcolor="white",
+                    paper_bgcolor="white",
+                    font_color="#5A3E36"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            # Top selling products
+            st.markdown("#### 🏆 Top Selling Products")
+            product_sales = df_sales.groupby("item").agg({
+                "quantity": "sum",
+                "total": "sum"
+            }).reset_index()
+            product_sales = product_sales.sort_values("total", ascending=False).head(10)
+            product_sales.columns = ["Product", "Units Sold", "Revenue (RM)"]
+            
+            st.dataframe(
+                product_sales,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Revenue (RM)": st.column_config.NumberColumn(format="%.2f")
+                }
+            )
+        else:
+            st.info("📊 Sales trends will appear here once you start recording sales data.")
+    
+    except Exception as e:
+        st.error(f"Trends analysis error: {str(e)}")
+
+def show_product_performance():
+    """Show individual product performance"""
+    try:
+        st.markdown("### 🎯 Product Performance Analysis")
+        
+        inventory_data = st.session_state.inventory_data
+        
+        # Create product performance dataframe
+        product_performance = []
+        
+        for name, item in inventory_data.items():
+            # Calculate individual product metrics
+            stock_status = get_stock_status(item["current_stock"], item["min_stock"])
+            stock_coverage = (item["current_stock"] / item["max_stock"]) * 100 if item["max_stock"] > 0 else 0
+            
+            # Calculate sales for this product
+            product_sales = [sale for sale in st.session_state.sales_data if sale["item"] == name]
+            units_sold = sum(sale["quantity"] for sale in product_sales)
+            revenue = sum(sale["quantity"] * sale["unit_price"] for sale in product_sales)
+            
+            # Calculate product gross margin
+            if revenue > 0:
+                cogs = units_sold * item["unit_cost"]
+                gross_margin = ((revenue - cogs) / revenue) * 100
+            else:
+                gross_margin = 0
+            
+            # Calculate inventory value
+            inventory_value = item["current_stock"] * item["unit_cost"]
+            
+            product_performance.append({
+                "Product": name,
+                "Category": item["category"],
+                "Current Stock": item["current_stock"],
+                "Stock Status": stock_status,
+                "Stock Coverage (%)": stock_coverage,
+                "Units Sold": units_sold,
+                "Revenue (RM)": revenue,
+                "Gross Margin (%)": gross_margin,
+                "Inventory Value (RM)": inventory_value,
+                "Supplier": item["supplier"]
+            })
+        
+        df_performance = pd.DataFrame(product_performance)
+        
+        # Display filters
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            category_filter = st.selectbox("Filter by Category", 
+                                         ["All"] + list(df_performance["Category"].unique()))
+        
+        with col2:
+            status_filter = st.selectbox("Filter by Stock Status", 
+                                       ["All", "Critical", "Low", "Normal"])
+        
+        with col3:
+            sort_by = st.selectbox("Sort by", 
+                                 ["Revenue", "Units Sold", "Gross Margin", "Stock Coverage"])
+        
+        # Apply filters
+        filtered_df = df_performance.copy()
+        
+        if category_filter != "All":
+            filtered_df = filtered_df[filtered_df["Category"] == category_filter]
+        
+        if status_filter != "All":
+            filtered_df = filtered_df[filtered_df["Stock Status"] == status_filter]
+        
+        # Sort data
+        if sort_by == "Revenue":
+            filtered_df = filtered_df.sort_values("Revenue (RM)", ascending=False)
+        elif sort_by == "Units Sold":
+            filtered_df = filtered_df.sort_values("Units Sold", ascending=False)
+        elif sort_by == "Gross Margin":
+            filtered_df = filtered_df.sort_values("Gross Margin (%)", ascending=False)
+        elif sort_by == "Stock Coverage":
+            filtered_df = filtered_df.sort_values("Stock Coverage (%)", ascending=False)
+        
+        # Display table
+        st.dataframe(
+            filtered_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Revenue (RM)": st.column_config.NumberColumn(format="%.2f"),
+                "Gross Margin (%)": st.column_config.NumberColumn(format="%.1f"),
+                "Stock Coverage (%)": st.column_config.NumberColumn(format="%.1f"),
+                "Inventory Value (RM)": st.column_config.NumberColumn(format="%.2f")
+            }
+        )
+        
+        # Performance insights
+        st.markdown("#### 💡 Product Insights")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Top performers
+            top_revenue = df_performance.nlargest(3, "Revenue (RM)")["Product"].tolist()
+            top_margin = df_performance.nlargest(3, "Gross Margin (%)")["Product"].tolist()
+            
+            st.markdown("**🏆 Top Performers**")
+            st.success(f"**Revenue Leaders:** {', '.join(top_revenue[:3])}")
+            if any(margin > 0 for margin in df_performance["Gross Margin (%)"]):
+                st.success(f"**Margin Leaders:** {', '.join(top_margin[:3])}")
+        
+        with col2:
+            # Needs attention
+            critical_items = df_performance[df_performance["Stock Status"] == "Critical"]["Product"].tolist()
+            low_performers = df_performance[df_performance["Units Sold"] == 0]["Product"].tolist()
+            
+            st.markdown("**⚠️ Needs Attention**")
+            if critical_items:
+                st.error(f"**Critical Stock:** {', '.join(critical_items[:3])}")
+            if low_performers:
+                st.warning(f"**No Sales:** {', '.join(low_performers[:3])}")
+    
+    except Exception as e:
+        st.error(f"Product performance error: {str(e)}")
+
+def show_recommendations(kpis):
+    """Show actionable recommendations based on KPIs"""
+    try:
+        st.markdown("### ⚠️ Actionable Recommendations")
+        
+        recommendations = []
+        
+        # Inventory turnover recommendations
+        if kpis["inventory_turnover"] < 1:
+            recommendations.append({
+                "priority": "🔴 High",
+                "category": "Inventory Turnover",
+                "issue": "Very low inventory turnover",
+                "action": "Consider promotions, discounts, or product bundling to increase sales velocity",
+                "impact": "Reduce holding costs and improve cash flow"
+            })
+        elif kpis["inventory_turnover"] < 2:
+            recommendations.append({
+                "priority": "🟡 Medium",
+                "category": "Inventory Turnover",
+                "issue": "Below optimal inventory turnover",
+                "action": "Review product mix and implement targeted marketing campaigns",
+                "impact": "Improve inventory efficiency"
+            })
+        
+        # DSI recommendations
+        if kpis["dsi"] > 90:
+            recommendations.append({
+                "priority": "🔴 High",
+                "category": "Days Sales Inventory",
+                "issue": "High DSI indicates slow-moving inventory",
+                "action": "Identify slow-moving products and implement clearance strategies",
+                "impact": "Reduce inventory holding period and costs"
+            })
+        elif kpis["dsi"] > 60:
+            recommendations.append({
+                "priority": "🟡 Medium",
+                "category": "Days Sales Inventory",
+                "issue": "DSI above optimal range",
+                "action": "Review demand forecasting and adjust procurement schedules",
+                "impact": "Optimize inventory levels"
+            })
+        
+        # Stockout recommendations
+        if kpis["stockout_rate"] > 10:
+            recommendations.append({
+                "priority": "🔴 High",
+                "category": "Stock Management",
+                "issue": "High stockout rate affecting customer satisfaction",
+                "action": "Implement safety stock levels and improve demand forecasting",
+                "impact": "Improve customer satisfaction and sales"
+            })
+        elif kpis["stockout_rate"] > 5:
+            recommendations.append({
+                "priority": "🟡 Medium",
+                "category": "Stock Management",
+                "issue": "Moderate stockout rate",
+                "action": "Review minimum stock levels for frequently sold items",
+                "impact": "Reduce lost sales opportunities"
+            })
+        
+        # Margin recommendations
+        if kpis["overall_gross_margin"] < 15:
+            recommendations.append({
+                "priority": "🔴 High",
+                "category": "Profitability",
+                "issue": "Low gross margins affecting profitability",
+                "action": "Review pricing strategy and negotiate better supplier terms",
+                "impact": "Improve overall profitability"
+            })
+        elif kpis["overall_gross_margin"] < 25:
+            recommendations.append({
+                "priority": "🟡 Medium",
+                "category": "Profitability",
+                "issue": "Margins could be improved",
+                "action": "Analyze product-level margins and optimize pricing",
+                "impact": "Increase profit margins"
+            })
+        
+        # Service level recommendations
+        if kpis["service_level"] < 90:
+            recommendations.append({
+                "priority": "🔴 High",
+                "category": "Customer Service",
+                "issue": "Low service level affecting customer experience",
+                "action": "Implement automated reorder points and safety stock",
+                "impact": "Improve customer satisfaction and retention"
+            })
+        
+        # Holding cost recommendations
+        if kpis["holding_cost_amount"] > 1000:
+            recommendations.append({
+                "priority": "🟡 Medium",
+                "category": "Cost Management",
+                "issue": "High inventory holding costs",
+                "action": "Optimize inventory levels and improve turnover",
+                "impact": "Reduce operational costs"
+            })
+        
+        # Display recommendations
+        if recommendations:
+            for i, rec in enumerate(recommendations):
+                with st.expander(f"{rec['priority']} {rec['category']}: {rec['issue']}", expanded=i==0):
+                    col1, col2 = st.columns([2, 1])
+                    
+                    with col1:
+                        st.markdown(f"**📋 Recommended Action:**")
+                        st.info(rec['action'])
+                        
+                        st.markdown(f"**🎯 Expected Impact:**")
+                        st.success(rec['impact'])
+                    
+                    with col2:
+                        st.markdown(f"**Priority Level:**")
+                        st.markdown(rec['priority'])
+                        
+                        if rec['priority'] == "🔴 High":
+                            st.error("Immediate attention required")
+                        elif rec['priority'] == "🟡 Medium":
+                            st.warning("Address within 1-2 weeks")
+                        else:
+                            st.info("Monitor and plan")
+        else:
+            st.success("🎉 Great job! Your inventory metrics are performing well. Keep monitoring for continuous improvement.")
+        
+        # General best practices
+        st.markdown("#### 📚 General Best Practices")
+        
+        with st.expander("💡 Inventory Management Tips"):
+            st.markdown("""
+            **🔄 Regular Reviews:**
+            - Review inventory levels weekly
+            - Analyze sales patterns monthly
+            - Adjust reorder points seasonally
+            
+            **📊 Data-Driven Decisions:**
+            - Use historical sales data for forecasting
+            - Monitor KPIs consistently
+            - Set up automated alerts for critical levels
+            
+            **🤝 Supplier Management:**
+            - Maintain good supplier relationships
+            - Negotiate favorable payment terms
+            - Have backup suppliers for critical items
+            
+            **💰 Cost Optimization:**
+            - Regularly review pricing strategies
+            - Optimize order quantities
+            - Minimize holding costs while maintaining service levels
+            
+            **📈 Growth Strategies:**
+            - Focus on high-margin products
+            - Identify and eliminate slow-moving inventory
+            - Implement cross-selling and upselling opportunities
+            """)
+    
+    except Exception as e:
+        st.error(f"Recommendations error: {str(e)}")
+
+def show_settings():
+    st.markdown("""
+    <div class="chamomile-header">
+        <h1>⚙️ Settings</h1>
+        <p>Configure your system preferences and data management</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    tab1, tab2, tab3 = st.tabs(["🔧 System Settings", "📊 Data Management", "🔄 Backup & Restore"])
+    
+    with tab1:
+        st.markdown("### 🔧 System Configuration")
+        
+        st.markdown("#### 📱 Display Settings")
+        currency = st.selectbox("Currency", ["RM (Malaysian Ringgit)", "USD", "EUR", "SGD"], index=0)
+        decimal_places = st.selectbox("Decimal Places", [0, 1, 2], index=2)
+        
+        st.markdown("#### ⚠️ Alert Thresholds")
+        col1, col2 = st.columns(2)
+        with col1:
+            low_stock_threshold = st.slider("Low Stock Alert (%)", 10, 50, 20)
+        with col2:
+            critical_stock_days = st.slider("Critical Stock Days", 1, 10, 3)
+        
+        if st.button("💾 Save Settings"):
+            st.success("✅ Settings saved successfully!")
+    
+    with tab2:
+        st.markdown("### 📊 Data Management")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 📤 Export Data")
+            if st.button("📋 Export Inventory Data"):
+                df_inventory = pd.DataFrame.from_dict(st.session_state.inventory_data, orient='index')
+                csv = df_inventory.to_csv()
+                st.download_button(
+                    label="⬇️ Download Inventory CSV",
+                    data=csv,
+                    file_name=f"inventory_export_{datetime.now().strftime('%Y%m%d')}.csv",
+                    mime="text/csv"
+                )
+            
+            if st.button("💰 Export Sales Data"):
+                if st.session_state.sales_data:
+                    df_sales = pd.DataFrame(st.session_state.sales_data)
+                    csv = df_sales.to_csv(index=False)
+                    st.download_button(
+                        label="⬇️ Download Sales CSV",
+                        data=csv,
+                        file_name=f"sales_export_{datetime.now().strftime('%Y%m%d')}.csv",
+                        mime="text/csv"
+                    )
+                else:
+                    st.info("No sales data to export")
+        
+        with col2:
+            st.markdown("#### 🗑️ Data Cleanup")
+            st.warning("⚠️ These actions cannot be undone!")
+            
+            if st.button("🧹 Clear Old Sales Data (>30 days)"):
+                cutoff_date = datetime.now() - timedelta(days=30)
+                original_count = len(st.session_state.sales_data)
+                st.session_state.sales_data = [
+                    sale for sale in st.session_state.sales_data 
+                    if datetime.strptime(sale["date"], "%Y-%m-%d") > cutoff_date
+                ]
+                removed = original_count - len(st.session_state.sales_data)
+                st.success(f"✅ Removed {removed} old sales records")
+    
+    with tab3:
+        st.markdown("### 🔄 Backup & Restore")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 💾 Backup Data")
+            backup_data = {
+                "inventory_data": st.session_state.inventory_data,
+                "sales_data": st.session_state.sales_data,
+                "backup_date": datetime.now().isoformat()
+            }
+            backup_json = json.dumps(backup_data, indent=2)
+            
+            st.download_button(
+                label="📦 Download Complete Backup",
+                data=backup_json,
+                file_name=f"chamomile_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json"
+            )
+        
+        with col2:
+            st.markdown("#### 📂 Restore Data")
+            uploaded_file = st.file_uploader("Choose backup file", type="json")
+            
+            if uploaded_file is not None:
+                try:
+                    backup_data = json.load(uploaded_file)
+                    
+                    if st.button("🔄 Restore from Backup"):
+                        st.session_state.inventory_data = backup_data.get("inventory_data", {})
+                        st.session_state.sales_data = backup_data.get("sales_data", [])
+                        st.success("✅ Data restored successfully!")
+                        st.rerun()
+                        
+                except Exception as e:
+                    st.error(f"❌ Error reading backup file: {str(e)}")
+
+if __name__ == "__main__":
+    main()import streamlit as st
