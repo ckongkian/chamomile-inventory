@@ -6,175 +6,378 @@ from datetime import datetime, timedelta
 import json
 from typing import Dict, List
 
-# Configure the page
+# Configure the page with Chamomile branding
 st.set_page_config(
-    page_title="🧋 Oatmilk Tea Inventory",
-    page_icon="🧋",
+    page_title="🌼 Chamomile Tea Inventory",
+    page_icon="🌼",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Enhanced Custom CSS for better appearance
+# Chamomile-themed CSS with warm, relaxing colors
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    /* Import Chamomile fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
     
-    /* Global Styles */
+    /* Global styling with Chamomile theme */
     .main > div {
-        padding-top: 2rem;
-        font-family: 'Inter', sans-serif;
+        padding-top: 1rem;
+        font-family: 'Poppins', sans-serif;
+        background-color: #F9E1D3 !important;
+        color: #5A3E36 !important;
     }
     
-    /* Improved Metrics */
+    /* Force all text to be readable */
+    * {
+        color: #5A3E36 !important;
+    }
+    
+    /* Main content background */
+    .main .block-container {
+        background-color: #F9E1D3 !important;
+        padding: 2rem 1rem;
+        max-width: 1200px;
+    }
+    
+    /* Sidebar with Chamomile colors */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #5A3E36 0%, #8B6F47 100%);
+        border-right: 3px solid #EFDD86;
+    }
+    
+    .css-1d391kg * {
+        color: #FFFFFF !important;
+    }
+    
+    .css-1d391kg .stMarkdown {
+        color: #FFFFFF !important;
+    }
+    
+    .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
+        color: #FFFFFF !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Brand header with Chamomile styling */
+    .chamomile-header {
+        background: linear-gradient(135deg, #EFDD86 0%, #F4E49C 100%);
+        color: #5A3E36 !important;
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0 2rem 0;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(90, 62, 54, 0.15);
+        border: 2px solid #5A3E36;
+    }
+    
+    .chamomile-header h1 {
+        color: #5A3E36 !important;
+        margin: 0;
+        font-size: 2.8rem;
+        font-weight: 700;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .chamomile-header p {
+        color: #5A3E36 !important;
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        font-style: italic;
+        opacity: 0.8;
+    }
+    
+    /* Metrics cards with warm styling */
     .stMetric {
-        background: linear-gradient(145deg, #ffffff, #f8f9fa);
-        border: 1px solid #e9ecef;
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
         padding: 1.5rem;
-        border-radius: 12px;
-        margin: 0.25rem 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 15px;
+        margin: 0.5rem 0;
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
         transition: all 0.3s ease;
     }
     
     .stMetric:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(90, 62, 54, 0.2);
+        border-color: #5A3E36;
     }
     
-    /* Enhanced Alert Styles */
+    .stMetric label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+    
+    .stMetric [data-testid="metric-value"] {
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 2rem !important;
+    }
+    
+    .stMetric [data-testid="metric-delta"] {
+        color: #25D366 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Alert styles with Chamomile theme */
     .alert-critical {
-        background: linear-gradient(135deg, #ff6b6b, #ff5252);
-        color: white;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-        animation: pulse 2s infinite;
+        background: #FFFFFF !important;
+        border: 3px solid #dc2626 !important;
+        border-left: 8px solid #dc2626 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+    }
+    
+    .alert-critical h4 {
+        color: #dc2626 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
     }
     
     .alert-warning {
-        background: linear-gradient(135deg, #ffd93d, #ffcc02);
-        color: #8B4513;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        box-shadow: 0 4px 12px rgba(255, 217, 61, 0.3);
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
+        border-left: 8px solid #EFDD86 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(239, 221, 134, 0.2);
+    }
+    
+    .alert-warning h4 {
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
     }
     
     .alert-success {
-        background: linear-gradient(135deg, #51cf66, #40c057);
-        color: white;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        box-shadow: 0 4px 12px rgba(81, 207, 102, 0.3);
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); }
-    }
-    
-    /* Better Headers */
-    .custom-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 10px;
+        background: #FFFFFF !important;
+        border: 3px solid #25D366 !important;
+        border-left: 8px solid #25D366 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
         margin: 1rem 0;
-        font-weight: 600;
-        text-align: center;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.15);
     }
     
+    .alert-success h4 {
+        color: #25D366 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Section headers */
     .section-header {
-        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        padding: 0.8rem 1.2rem;
-        border-radius: 8px;
-        margin: 1rem 0 0.5rem 0;
-        font-weight: 500;
+        background: linear-gradient(135deg, #5A3E36 0%, #8B6F47 100%);
+        color: #FFFFFF !important;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.2);
+        font-family: 'Playfair Display', serif;
     }
     
-    /* Form Improvements */
-    .stSelectbox > div > div {
-        background-color: #f8f9fa;
-        border-radius: 8px;
+    .section-header * {
+        color: #FFFFFF !important;
     }
     
-    .stNumberInput > div > div {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-    }
-    
-    .stTextInput > div > div {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-    }
-    
-    /* Button Improvements */
+    /* Buttons with Chamomile styling */
     .stButton > button {
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1.5rem;
-        font-weight: 500;
+        background: linear-gradient(135deg, #25D366, #20B858) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        font-family: 'Poppins', sans-serif;
     }
     
     .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        background: linear-gradient(135deg, #20B858, #1da851) !important;
     }
     
-    /* Sidebar Improvements */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    /* Form elements */
+    .stSelectbox > div > div,
+    .stNumberInput > div > div,
+    .stTextInput > div > div,
+    .stTextArea > div > div,
+    .stDateInput > div > div {
+        background-color: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        color: #5A3E36 !important;
+        font-family: 'Poppins', sans-serif;
     }
     
-    /* Table Improvements */
-    .dataframe {
-        border-radius: 8px;
+    .stSelectbox > div > div:focus,
+    .stNumberInput > div > div:focus,
+    .stTextInput > div > div:focus,
+    .stTextArea > div > div:focus {
+        border-color: #5A3E36 !important;
+        box-shadow: 0 0 0 2px rgba(90, 62, 54, 0.2);
+    }
+    
+    /* Form labels */
+    .stSelectbox label, 
+    .stNumberInput label, 
+    .stTextInput label, 
+    .stTextArea label,
+    .stDateInput label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Tables */
+    .stDataFrame {
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
     }
     
-    /* Status Badges */
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-        margin: 2px;
+    .stDataFrame table {
+        background: #FFFFFF !important;
+        font-family: 'Poppins', sans-serif;
     }
     
-    .status-critical { background: #ffe0e1; color: #c92a2a; }
-    .status-warning { background: #fff3bf; color: #e67700; }
-    .status-normal { background: #d3f9d8; color: #2b8a3e; }
+    .stDataFrame th {
+        background: linear-gradient(135deg, #EFDD86, #F4E49C) !important;
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        border-bottom: 2px solid #5A3E36 !important;
+        font-family: 'Playfair Display', serif;
+    }
     
-    /* Loading Animation */
-    .loading-container {
+    .stDataFrame td {
+        color: #5A3E36 !important;
+        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+        border-bottom: 1px solid #EFDD86 !important;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background: transparent !important;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        padding: 0.8rem 1.5rem !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #5A3E36, #8B6F47) !important;
+        color: #FFFFFF !important;
+        border-color: #5A3E36 !important;
+    }
+    
+    /* Radio buttons */
+    .stRadio > div {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    .stRadio label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Notifications */
+    [data-testid="stNotificationContentInfo"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentSuccess"] {
+        background: #FFFFFF !important;
+        border: 2px solid #25D366 !important;
+        color: #25D366 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentWarning"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentError"] {
+        background: #FFFFFF !important;
+        border: 2px solid #dc2626 !important;
+        color: #dc2626 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    /* Progress bars */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #25D366, #20B858) !important;
+        border-radius: 10px;
+    }
+    
+    /* Plotly charts */
+    .js-plotly-plot {
+        background: #FFFFFF !important;
+        border-radius: 12px;
+        border: 2px solid #EFDD86;
+    }
+    
+    /* Custom progress bar for stock levels */
+    .stock-progress {
+        background: #F9E1D3;
+        border-radius: 15px;
+        height: 25px;
+        margin: 1rem 0;
+        border: 2px solid #EFDD86;
+        overflow: hidden;
+    }
+    
+    .stock-progress-fill {
+        height: 100%;
+        border-radius: 13px;
+        transition: all 0.3s ease;
         display: flex;
-        justify-content: center;
         align-items: center;
-        height: 200px;
-    }
-    
-    .loading-spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -187,78 +390,69 @@ class InventoryManager:
         """Load data from session state or initialize with sample data"""
         if 'inventory_data' not in st.session_state:
             st.session_state.inventory_data = {
-                "White Sugar 1000ml": {
-                    "current_stock": 12,
-                    "min_stock": 5,
-                    "max_stock": 50,
-                    "unit_cost": 2.85,
-                    "unit_price": 4.00,
-                    "supplier": "Local Supplier",
-                    "category": "Sweeteners"
-                },
-                "Oatside Ceramic": {
-                    "current_stock": 49,
-                    "min_stock": 10,
-                    "max_stock": 100,
-                    "unit_cost": 9.90,
-                    "unit_price": 15.00,
-                    "supplier": "Oatside",
-                    "category": "Oat Milk"
-                },
-                "English Tea Shop Lavender": {
-                    "current_stock": 19,
-                    "min_stock": 8,
-                    "max_stock": 40,
-                    "unit_cost": 18.20,
-                    "unit_price": 25.00,
-                    "supplier": "English Tea Shop",
-                    "category": "Tea"
-                },
-                "BOH Jasmine Green Tea": {
-                    "current_stock": 36,
+                "Chamomile Tea Bags": {
+                    "current_stock": 45,
                     "min_stock": 15,
-                    "max_stock": 60,
-                    "unit_cost": 8.71,
+                    "max_stock": 100,
+                    "unit_cost": 8.50,
                     "unit_price": 12.00,
-                    "supplier": "BOH",
+                    "supplier": "Chamomile Gardens",
                     "category": "Tea"
                 },
-                "Country Peach": {
-                    "current_stock": 26,
+                "Honey Chamomile Blend": {
+                    "current_stock": 32,
                     "min_stock": 10,
-                    "max_stock": 50,
-                    "unit_cost": 5.00,
-                    "unit_price": 8.50,
-                    "supplier": "Local Farm",
-                    "category": "Flavoring"
+                    "max_stock": 80,
+                    "unit_cost": 12.00,
+                    "unit_price": 18.00,
+                    "supplier": "Natural Blends Co",
+                    "category": "Tea"
                 },
-                "BOH Lychee with Rose Tea": {
+                "Oat Milk Organic": {
+                    "current_stock": 28,
+                    "min_stock": 20,
+                    "max_stock": 60,
+                    "unit_cost": 6.75,
+                    "unit_price": 9.50,
+                    "supplier": "Oat Valley",
+                    "category": "Milk"
+                },
+                "Lavender Chamomile": {
                     "current_stock": 8,
                     "min_stock": 12,
-                    "max_stock": 40,
-                    "unit_cost": 9.43,
-                    "unit_price": 14.00,
-                    "supplier": "BOH",
+                    "max_stock": 50,
+                    "unit_cost": 15.20,
+                    "unit_price": 22.00,
+                    "supplier": "Herbal Essence",
                     "category": "Tea"
                 },
-                "Raspberry": {
+                "Vanilla Honey": {
                     "current_stock": 3,
                     "min_stock": 15,
-                    "max_stock": 30,
-                    "unit_cost": 12.50,
-                    "unit_price": 18.00,
-                    "supplier": "Local Farm",
+                    "max_stock": 40,
+                    "unit_cost": 9.80,
+                    "unit_price": 14.50,
+                    "supplier": "Sweet Nature",
                     "category": "Flavoring"
+                },
+                "Chamomile Loose Leaf": {
+                    "current_stock": 22,
+                    "min_stock": 8,
+                    "max_stock": 35,
+                    "unit_cost": 18.00,
+                    "unit_price": 26.00,
+                    "supplier": "Premium Herbs",
+                    "category": "Tea"
                 }
             }
         
         if 'sales_data' not in st.session_state:
             st.session_state.sales_data = [
-                {"date": "2025-06-01", "item": "White Sugar 1000ml", "quantity": 3, "unit_price": 4.00},
-                {"date": "2025-06-01", "item": "Oatside Ceramic", "quantity": 1, "unit_price": 15.00},
-                {"date": "2025-06-02", "item": "English Tea Shop Lavender", "quantity": 6, "unit_price": 25.00},
-                {"date": "2025-06-02", "item": "BOH Jasmine Green Tea", "quantity": 4, "unit_price": 12.00},
-                {"date": "2025-06-03", "item": "Country Peach", "quantity": 4, "unit_price": 8.50},
+                {"date": "2025-06-01", "item": "Chamomile Tea Bags", "quantity": 8, "unit_price": 12.00},
+                {"date": "2025-06-01", "item": "Oat Milk Organic", "quantity": 3, "unit_price": 9.50},
+                {"date": "2025-06-02", "item": "Honey Chamomile Blend", "quantity": 5, "unit_price": 18.00},
+                {"date": "2025-06-02", "item": "Lavender Chamomile", "quantity": 2, "unit_price": 22.00},
+                {"date": "2025-06-03", "item": "Chamomile Loose Leaf", "quantity": 4, "unit_price": 26.00},
             ]
         
         if 'purchase_data' not in st.session_state:
@@ -267,26 +461,36 @@ class InventoryManager:
 def main():
     inventory_manager = InventoryManager()
     
-    # Enhanced Sidebar with better navigation
+    # Enhanced Sidebar with Chamomile branding
     with st.sidebar:
         st.markdown("""
-        <div style="text-align: center; padding: 1rem;">
-            <h1 style="color: white; font-size: 1.5rem; margin: 0;">🧋 Tea Inventory</h1>
-            <p style="color: #e0e0e0; font-size: 0.9rem; margin: 0.5rem 0;">Professional Management System</p>
+        <div style="text-align: center; padding: 1.5rem;">
+            <h1 style="color: #EFDD86; font-size: 1.8rem; margin: 0; font-family: 'Playfair Display', serif;">🌼 CHÁMOMILE</h1>
+            <p style="color: #EFDD86; font-size: 0.9rem; margin: 0.5rem 0; font-style: italic;">Relaxation in every sip</p>
+            <p style="color: #FFFFFF; font-size: 0.8rem; margin: 0;">Professional Inventory System</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Navigation with icons
-        pages = {
-            "📊 Dashboard": "dashboard",
-            "📦 Inventory": "inventory", 
-            "💰 Sales": "sales",
-            "🛒 Purchases": "purchases",
-            "📈 Analytics": "analytics",
-            "⚙️ Settings": "settings"
-        }
+        # Navigation with proper session state handling
+        pages = [
+            "📊 Dashboard",
+            "📦 Inventory", 
+            "💰 Sales",
+            "🛒 Purchases",
+            "📈 Analytics",
+            "⚙️ Settings"
+        ]
         
-        selected_page = st.radio("", list(pages.keys()), key="navigation")
+        # Initialize navigation in session state
+        if "current_page" not in st.session_state:
+            st.session_state.current_page = "📊 Dashboard"
+        
+        selected_page = st.radio("", pages, 
+                                index=pages.index(st.session_state.current_page) if st.session_state.current_page in pages else 0,
+                                key="nav_radio")
+        
+        # Update current page
+        st.session_state.current_page = selected_page
         
         # Quick stats in sidebar
         st.markdown("---")
@@ -304,32 +508,30 @@ def main():
         st.markdown(f"**📅 {current_time.strftime('%B %d, %Y')}**")
         st.markdown(f"**🕐 {current_time.strftime('%I:%M %p')}**")
     
-    # Route to pages
-    page_key = pages[selected_page]
-    
-    if page_key == "dashboard":
-        show_enhanced_dashboard()
-    elif page_key == "inventory":
-        show_enhanced_inventory()
-    elif page_key == "sales":
-        show_enhanced_sales()
-    elif page_key == "purchases":
-        show_enhanced_purchases()
-    elif page_key == "analytics":
-        show_enhanced_analytics()
-    elif page_key == "settings":
-        show_enhanced_settings()
+    # Route to pages based on selection
+    if st.session_state.current_page == "📊 Dashboard":
+        show_dashboard()
+    elif st.session_state.current_page == "📦 Inventory":
+        show_inventory()
+    elif st.session_state.current_page == "💰 Sales":
+        show_sales()
+    elif st.session_state.current_page == "🛒 Purchases":
+        show_purchases()
+    elif st.session_state.current_page == "📈 Analytics":
+        show_analytics()
+    elif st.session_state.current_page == "⚙️ Settings":
+        show_settings()
 
-def show_enhanced_dashboard():
-    # Header with business branding
+def show_dashboard():
+    # Chamomile-themed header
     st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.5rem;">🧋 Oatmilk Tea Inventory Dashboard</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Real-time Business Intelligence</p>
+    <div class="chamomile-header">
+        <h1>🌼 Chamomile Tea Inventory Dashboard</h1>
+        <p>Real-time Business Intelligence & Stock Management</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Enhanced Key Metrics with better visuals
+    # Key Metrics
     inventory_data = st.session_state.inventory_data
     total_value = sum(item["current_stock"] * item["unit_cost"] for item in inventory_data.values())
     total_items = len(inventory_data)
@@ -342,17 +544,17 @@ def show_enhanced_dashboard():
         st.metric("💰 Total Inventory Value", f"RM {total_value:,.2f}", delta="Live")
     
     with col2:
-        st.metric("📦 Products", total_items, delta="Active")
+        st.metric("🌼 Products", total_items, delta="Active")
     
     with col3:
         alert_color = "normal" if len(low_stock_items) == 0 else "inverse"
-        st.metric("⚠️ Low Stock", len(low_stock_items), delta=f"-{len(low_stock_items)}" if low_stock_items else "All Good!", delta_color=alert_color)
+        st.metric("⚠️ Low Stock", len(low_stock_items), delta=f"-{len(low_stock_items)}" if low_stock_items else "All Good!")
     
     with col4:
         critical_color = "normal" if len(out_of_stock) == 0 else "inverse"
-        st.metric("🚨 Critical", len(out_of_stock), delta=f"-{len(out_of_stock)}" if out_of_stock else "All Good!", delta_color=critical_color)
+        st.metric("🚨 Critical", len(out_of_stock), delta=f"-{len(out_of_stock)}" if out_of_stock else "All Good!")
     
-    # Enhanced Alerts with better styling
+    # Stock Alerts
     st.markdown('<div class="section-header">🚨 Stock Alerts & Action Items</div>', unsafe_allow_html=True)
     
     alerts_col1, alerts_col2 = st.columns([2, 1])
@@ -362,9 +564,9 @@ def show_enhanced_dashboard():
             for item in out_of_stock:
                 st.markdown(f"""
                 <div class="alert-critical">
-                    <h4 style="margin: 0 0 0.5rem 0;">🚨 CRITICAL: {item}</h4>
-                    <p style="margin: 0; font-size: 1.1rem;">OUT OF STOCK - Immediate reorder required!</p>
-                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Contact: {inventory_data[item]['supplier']}</p>
+                    <h4>🚨 CRITICAL: {item}</h4>
+                    <p style="margin: 0; font-size: 1.1rem; color: #dc2626;">OUT OF STOCK - Immediate reorder required!</p>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.8; color: #5A3E36;">Contact: {inventory_data[item]['supplier']}</p>
                 </div>
                 """, unsafe_allow_html=True)
         
@@ -375,34 +577,36 @@ def show_enhanced_dashboard():
                     minimum = inventory_data[item]["min_stock"]
                     st.markdown(f"""
                     <div class="alert-warning">
-                        <h4 style="margin: 0 0 0.5rem 0;">⚠️ LOW STOCK: {item}</h4>
-                        <p style="margin: 0; font-size: 1.1rem;">Current: {current} units | Minimum: {minimum} units</p>
-                        <p style="margin: 0.5rem 0 0 0; opacity: 0.8;">Reorder soon from: {inventory_data[item]['supplier']}</p>
+                        <h4>⚠️ LOW STOCK: {item}</h4>
+                        <p style="margin: 0; font-size: 1.1rem; color: #5A3E36;">Current: {current} units | Minimum: {minimum} units</p>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.8; color: #5A3E36;">Reorder soon from: {inventory_data[item]['supplier']}</p>
                     </div>
                     """, unsafe_allow_html=True)
         
         if not low_stock_items and not out_of_stock:
             st.markdown("""
             <div class="alert-success">
-                <h4 style="margin: 0 0 0.5rem 0;">✅ All Stock Levels Healthy!</h4>
-                <p style="margin: 0; font-size: 1.1rem;">No immediate action required. Keep up the great work!</p>
+                <h4>✅ All Stock Levels Healthy!</h4>
+                <p style="margin: 0; font-size: 1.1rem; color: #25D366;">No immediate action required. Keep up the great work!</p>
             </div>
             """, unsafe_allow_html=True)
     
     with alerts_col2:
-        # Quick action buttons
         st.markdown("### 🚀 Quick Actions")
         if st.button("📝 Record Sale", use_container_width=True):
-            st.switch_page("sales")
+            st.session_state.current_page = "💰 Sales"
+            st.rerun()
         if st.button("📦 Update Stock", use_container_width=True):
-            st.switch_page("inventory")
+            st.session_state.current_page = "📦 Inventory"
+            st.rerun()
         if st.button("📈 View Analytics", use_container_width=True):
-            st.switch_page("analytics")
+            st.session_state.current_page = "📈 Analytics"
+            st.rerun()
     
-    # Enhanced Stock Overview with better charts
+    # Stock Overview Charts
     st.markdown('<div class="section-header">📊 Stock Levels Overview</div>', unsafe_allow_html=True)
     
-    # Create enhanced stock level chart
+    # Create stock data
     df_stock = pd.DataFrame([
         {
             "Product": name.replace(" ", "\n") if len(name) > 15 else name,
@@ -416,7 +620,7 @@ def show_enhanced_dashboard():
         for name, item in inventory_data.items()
     ])
     
-    # Create side-by-side charts
+    # Charts side by side
     chart_col1, chart_col2 = st.columns(2)
     
     with chart_col1:
@@ -425,48 +629,49 @@ def show_enhanced_dashboard():
             x="Product", 
             y=["Current Stock", "Min Stock"], 
             title="📊 Current vs Minimum Stock Levels",
-            color_discrete_map={"Current Stock": "#667eea", "Min Stock": "#f093fb"},
+            color_discrete_map={"Current Stock": "#5A3E36", "Min Stock": "#EFDD86"},
             height=400
         )
         fig1.update_layout(
             plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family="Inter, sans-serif"),
-            title_font_size=16
+            paper_bgcolor='rgba(255,255,255,1)',
+            font=dict(family="Poppins, sans-serif", color="#5A3E36"),
+            title_font_size=16,
+            title_font_color="#5A3E36"
         )
         st.plotly_chart(fig1, use_container_width=True)
     
     with chart_col2:
-        # Donut chart for stock status
         status_counts = df_stock['Status'].value_counts()
         fig2 = px.pie(
             values=status_counts.values, 
             names=status_counts.index,
             title="📈 Stock Status Distribution",
             hole=0.4,
-            color_discrete_map={"Critical": "#ff6b6b", "Low": "#ffd93d", "Normal": "#51cf66"},
+            color_discrete_map={"Critical": "#dc2626", "Low": "#EFDD86", "Normal": "#25D366"},
             height=400
         )
         fig2.update_layout(
             plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family="Inter, sans-serif"),
-            title_font_size=16
+            paper_bgcolor='rgba(255,255,255,1)',
+            font=dict(family="Poppins, sans-serif", color="#5A3E36"),
+            title_font_size=16,
+            title_font_color="#5A3E36"
         )
         st.plotly_chart(fig2, use_container_width=True)
     
-    # Enhanced Recent Activity
+    # Recent Sales Activity
     st.markdown('<div class="section-header">📝 Recent Sales Activity</div>', unsafe_allow_html=True)
     
     if st.session_state.sales_data:
         recent_sales = pd.DataFrame(st.session_state.sales_data[-10:])
         recent_sales["Total"] = recent_sales["quantity"] * recent_sales["unit_price"]
         recent_sales["Date"] = pd.to_datetime(recent_sales["date"]).dt.strftime("%b %d")
-        recent_sales = recent_sales[["Date", "item", "quantity", "unit_price", "Total"]]
-        recent_sales.columns = ["Date", "Product", "Qty", "Unit Price (RM)", "Total (RM)"]
+        display_sales = recent_sales[["Date", "item", "quantity", "unit_price", "Total"]].copy()
+        display_sales.columns = ["Date", "Product", "Qty", "Unit Price (RM)", "Total (RM)"]
         
         st.dataframe(
-            recent_sales, 
+            display_sales, 
             use_container_width=True,
             hide_index=True,
             column_config={
@@ -475,7 +680,7 @@ def show_enhanced_dashboard():
             }
         )
         
-        # Sales summary cards
+        # Sales summary
         col1, col2, col3 = st.columns(3)
         today = datetime.now().strftime("%Y-%m-%d")
         week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
@@ -492,7 +697,7 @@ def show_enhanced_dashboard():
             st.metric("This Week", f"RM {week_sales:.2f}")
         
         with col3:
-            avg_daily = df_sales.groupby("date")["Total"].sum().mean()
+            avg_daily = df_sales.groupby("date")["Total"].sum().mean() if len(df_sales) > 0 else 0
             st.metric("Daily Average", f"RM {avg_daily:.2f}")
     else:
         st.info("💡 No sales recorded yet. Use the Sales page to start tracking!")
@@ -505,16 +710,15 @@ def get_stock_status(current, minimum):
     else:
         return "Normal"
 
-def show_enhanced_inventory():
+def show_inventory():
     st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.2rem;">📦 Inventory Management</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage your products and stock levels</p>
+    <div class="chamomile-header">
+        <h1>📦 Inventory Management</h1>
+        <p>Manage your chamomile products and stock levels</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Enhanced tabs with better styling
-    tab1, tab2, tab3, tab4 = st.tabs(["📋 Current Inventory", "➕ Add Product", "✏️ Update Stock", "🔄 Bulk Actions"])
+    tab1, tab2, tab3 = st.tabs(["📋 Current Inventory", "➕ Add Product", "✏️ Update Stock"])
     
     with tab1:
         show_current_inventory()
@@ -524,9 +728,6 @@ def show_enhanced_inventory():
     
     with tab3:
         show_update_stock()
-    
-    with tab4:
-        show_bulk_actions()
 
 def show_current_inventory():
     # Enhanced filters
@@ -542,7 +743,7 @@ def show_current_inventory():
     with filter_col3:
         sort_by = st.selectbox("🔄 Sort by", ["Product Name", "Stock Level", "Value", "Category"])
     
-    # Create enhanced dataframe
+    # Create inventory dataframe
     df_inventory = []
     for name, item in st.session_state.inventory_data.items():
         status = get_stock_status(item["current_stock"], item["min_stock"])
@@ -582,7 +783,7 @@ def show_current_inventory():
     elif sort_by == "Category":
         df_inventory = df_inventory.sort_values("Category")
     
-    # Display enhanced table
+    # Display table
     st.dataframe(
         df_inventory,
         use_container_width=True,
@@ -592,10 +793,6 @@ def show_current_inventory():
             "Price": st.column_config.NumberColumn("Price (RM)", format="%.2f"),
             "Value": st.column_config.NumberColumn("Value (RM)", format="%.2f"),
             "Margin": st.column_config.NumberColumn("Margin (%)", format="%.1f"),
-            "Status": st.column_config.TextColumn(
-                "Status",
-                help="Stock status based on minimum levels"
-            )
         }
     )
     
@@ -618,9 +815,9 @@ def show_add_product():
         col1, col2 = st.columns(2)
         
         with col1:
-            product_name = st.text_input("📝 Product Name *", placeholder="e.g., Earl Grey Tea Bags")
-            category = st.selectbox("🏷️ Category", ["Tea", "Oat Milk", "Sweeteners", "Flavoring", "Packaging", "Other"])
-            supplier = st.text_input("🏢 Supplier", placeholder="e.g., ABC Tea Company")
+            product_name = st.text_input("📝 Product Name *", placeholder="e.g., Mint Chamomile Blend")
+            category = st.selectbox("🏷️ Category", ["Tea", "Milk", "Sweeteners", "Flavoring", "Packaging", "Other"])
+            supplier = st.text_input("🏢 Supplier", placeholder="e.g., Chamomile Gardens")
         
         with col2:
             unit_cost = st.number_input("💰 Unit Cost (RM) *", min_value=0.0, step=0.01, format="%.2f")
@@ -629,11 +826,11 @@ def show_add_product():
         
         col3, col4 = st.columns(2)
         with col3:
-            min_stock = st.number_input("⚠️ Minimum Stock Level", min_value=0, step=1, help="Alert when stock falls below this level")
+            min_stock = st.number_input("⚠️ Minimum Stock Level", min_value=0, step=1)
         with col4:
-            max_stock = st.number_input("📈 Maximum Stock Level", min_value=0, step=1, help="Target maximum inventory level")
+            max_stock = st.number_input("📈 Maximum Stock Level", min_value=0, step=1)
         
-        # Show calculated margin
+        # Show profit margin
         if unit_cost > 0 and unit_price > 0:
             margin = ((unit_price - unit_cost) / unit_price * 100)
             profit_per_unit = unit_price - unit_cost
@@ -683,18 +880,26 @@ def show_update_stock():
             **Stock Level:** {current_stock} / {max_stock} units ({fill_percentage:.1f}% full)
             """)
         
-        # Visual stock indicator
-        progress_color = "#ff6b6b" if status == "Critical" else "#ffd93d" if status == "Low" else "#51cf66"
+        # Visual stock indicator with Chamomile colors
+        if status == "Critical":
+            color = "#dc2626"
+        elif status == "Low":
+            color = "#EFDD86"
+        else:
+            color = "#25D366"
+        
         st.markdown(f"""
-        <div style="background: #f0f0f0; border-radius: 10px; height: 20px; margin: 1rem 0;">
-            <div style="background: {progress_color}; height: 100%; width: {fill_percentage}%; border-radius: 10px; transition: all 0.3s ease;"></div>
+        <div class="stock-progress">
+            <div class="stock-progress-fill" style="background: {color}; width: {fill_percentage}%;">
+                {fill_percentage:.1f}%
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
         col_add, col_remove = st.columns(2)
         
         with col_add:
-            st.markdown("**📈 Add Stock (Received Delivery)**")
+            st.markdown("**📈 Add Stock**")
             with st.form(f"add_stock_{product_to_update}"):
                 add_quantity = st.number_input("Quantity to Add", min_value=0, step=1, key=f"add_qty_{product_to_update}")
                 add_reason = st.selectbox("Reason", ["New Delivery", "Stock Transfer", "Inventory Adjustment"])
@@ -706,96 +911,22 @@ def show_update_stock():
                     st.rerun()
         
         with col_remove:
-            st.markdown("**📉 Remove Stock (Used/Sold)**")
+            st.markdown("**📉 Remove Stock**")
             with st.form(f"remove_stock_{product_to_update}"):
                 remove_quantity = st.number_input("Quantity to Remove", min_value=0, max_value=current_stock, step=1, key=f"remove_qty_{product_to_update}")
                 remove_reason = st.selectbox("Reason", ["Direct Sale", "Waste/Expired", "Stock Transfer", "Inventory Adjustment"])
-                remove_submitted = st.form_submit_button("➖ Remove Stock", type="secondary", use_container_width=True)
+                remove_submitted = st.form_submit_button("➖ Remove Stock", use_container_width=True)
                 
                 if remove_submitted and remove_quantity > 0:
                     st.session_state.inventory_data[product_to_update]["current_stock"] -= remove_quantity
                     st.success(f"✅ Removed {remove_quantity} units from {product_to_update}")
                     st.rerun()
 
-def show_bulk_actions():
-    st.markdown("### 🔄 Bulk Actions")
-    
-    action_type = st.selectbox("Select Action", [
-        "Export Inventory Data",
-        "Import Stock Update",
-        "Generate Reorder Report",
-        "Reset All Stock Alerts"
-    ])
-    
-    if action_type == "Export Inventory Data":
-        st.markdown("📤 **Export current inventory to CSV**")
-        df_export = pd.DataFrame([
-            {
-                "Product": name,
-                "Category": item["category"],
-                "Current Stock": item["current_stock"],
-                "Min Stock": item["min_stock"],
-                "Max Stock": item["max_stock"],
-                "Unit Cost": item["unit_cost"],
-                "Unit Price": item["unit_price"],
-                "Supplier": item["supplier"],
-                "Total Value": item["current_stock"] * item["unit_cost"]
-            }
-            for name, item in st.session_state.inventory_data.items()
-        ])
-        
-        csv_data = df_export.to_csv(index=False)
-        st.download_button(
-            "📥 Download CSV",
-            csv_data,
-            f"inventory_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            "text/csv",
-            use_container_width=True
-        )
-        
-        st.dataframe(df_export, use_container_width=True)
-    
-    elif action_type == "Generate Reorder Report":
-        st.markdown("📋 **Products that need reordering**")
-        
-        reorder_items = []
-        for name, item in st.session_state.inventory_data.items():
-            if item["current_stock"] <= item["min_stock"]:
-                suggested_order = max(item["max_stock"] - item["current_stock"], item["min_stock"] * 2)
-                reorder_items.append({
-                    "Product": name,
-                    "Current Stock": item["current_stock"],
-                    "Min Stock": item["min_stock"],
-                    "Suggested Order Qty": suggested_order,
-                    "Estimated Cost": suggested_order * item["unit_cost"],
-                    "Supplier": item["supplier"],
-                    "Priority": "🚨 URGENT" if item["current_stock"] == 0 else "⚠️ Soon"
-                })
-        
-        if reorder_items:
-            df_reorder = pd.DataFrame(reorder_items)
-            st.dataframe(df_reorder, use_container_width=True)
-            
-            total_cost = df_reorder["Estimated Cost"].sum()
-            st.metric("💰 Total Reorder Cost", f"RM {total_cost:.2f}")
-            
-            # Generate reorder list
-            csv_reorder = df_reorder.to_csv(index=False)
-            st.download_button(
-                "📥 Download Reorder List",
-                csv_reorder,
-                f"reorder_list_{datetime.now().strftime('%Y%m%d')}.csv",
-                "text/csv",
-                use_container_width=True
-            )
-        else:
-            st.success("✅ No products need reordering right now!")
-
-def show_enhanced_sales():
+def show_sales():
     st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.2rem;">💰 Sales Management</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Record sales and track performance</p>
+    <div class="chamomile-header">
+        <h1>💰 Sales Management</h1>
+        <p>Record sales and track performance</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -810,8 +941,7 @@ def show_enhanced_sales():
 def show_sales_entry():
     st.markdown("### 📝 Quick Sale Entry")
     
-    # Enhanced sales form with better UX
-    with st.form("enhanced_sales_form", clear_on_submit=True):
+    with st.form("sales_form", clear_on_submit=True):
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -822,7 +952,7 @@ def show_sales_entry():
                 st.error("❌ No products available for sale!")
                 product = None
             else:
-                product = st.selectbox("🧋 Product Sold", available_products)
+                product = st.selectbox("🌼 Product Sold", available_products)
         
         with col2:
             if product:
@@ -846,7 +976,6 @@ def show_sales_entry():
                 st.success(f"💰 Total: RM {total_amount:.2f}")
                 st.info(f"📈 Profit: RM {profit:.2f} ({margin:.1f}%)")
         
-        # Customer info (optional)
         customer_name = st.text_input("👤 Customer Name (Optional)", placeholder="Walk-in customer")
         notes = st.text_input("📝 Notes (Optional)", placeholder="Special instructions or comments")
         
@@ -870,7 +999,7 @@ def show_sales_entry():
             
             st.success(f"✅ Sale recorded: {quantity} x {product} for RM {total_amount:.2f}")
             
-            # Show updated stock level
+            # Check stock level
             remaining = st.session_state.inventory_data[product]["current_stock"]
             min_stock = st.session_state.inventory_data[product]["min_stock"]
             
@@ -880,7 +1009,7 @@ def show_sales_entry():
             st.rerun()
 
 def show_sales_history():
-    st.markdown("### 📊 Sales History & Analytics")
+    st.markdown("### 📊 Sales History")
     
     if not st.session_state.sales_data:
         st.info("💡 No sales recorded yet. Use the Record Sale tab to start tracking!")
@@ -897,7 +1026,7 @@ def show_sales_history():
     with col2:
         end_date = st.date_input("📅 To Date", df_sales["Date"].max().date())
     with col3:
-        product_filter = st.selectbox("🧋 Product Filter", ["All Products"] + df_sales["item"].unique().tolist())
+        product_filter = st.selectbox("🌼 Product Filter", ["All Products"] + df_sales["item"].unique().tolist())
     
     # Apply filters
     filtered_df = df_sales[
@@ -926,142 +1055,51 @@ def show_sales_history():
         num_transactions = len(filtered_df)
         st.metric("🧾 Transactions", f"{num_transactions:,}")
     
-    # Sales table with enhanced display
-    display_df = filtered_df.copy()
-    display_df["Date"] = display_df["Date"].dt.strftime("%Y-%m-%d")
-    display_df = display_df[["Date", "item", "quantity", "unit_price", "Total", "customer", "notes"]].sort_values("Date", ascending=False)
-    display_df.columns = ["Date", "Product", "Qty", "Unit Price", "Total", "Customer", "Notes"]
-    
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Unit Price": st.column_config.NumberColumn("Unit Price (RM)", format="%.2f"),
-            "Total": st.column_config.NumberColumn("Total (RM)", format="%.2f")
-        }
-    )
-
-def show_enhanced_purchases():
-    st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.2rem;">🛒 Purchase Management</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Track purchases and supplier information</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    tab1, tab2 = st.tabs(["📝 Record Purchase", "📊 Purchase History"])
-    
-    with tab1:
-        show_purchase_entry()
-    
-    with tab2:
-        show_purchase_history()
-
-def show_purchase_entry():
-    st.markdown("### 📝 Record New Purchase")
-    
-    with st.form("enhanced_purchase_form", clear_on_submit=True):
-        col1, col2, col3 = st.columns(3)
+    # Sales table
+    if len(filtered_df) > 0:
+        display_df = filtered_df.copy()
+        display_df["Date"] = display_df["Date"].dt.strftime("%Y-%m-%d")
+        display_df = display_df[["Date", "item", "quantity", "unit_price", "Total", "customer", "notes"]].sort_values("Date", ascending=False)
+        display_df.columns = ["Date", "Product", "Qty", "Unit Price", "Total", "Customer", "Notes"]
         
-        with col1:
-            purchase_date = st.date_input("📅 Purchase Date", datetime.now().date())
-            product = st.selectbox("📦 Product Purchased", list(st.session_state.inventory_data.keys()))
-        
-        with col2:
-            quantity = st.number_input("📊 Quantity Purchased", min_value=1, step=1)
-            if product:
-                default_cost = st.session_state.inventory_data[product]["unit_cost"]
-            else:
-                default_cost = 0.0
-        
-        with col3:
-            unit_cost = st.number_input("💰 Unit Cost (RM)", min_value=0.0, value=default_cost, step=0.01, format="%.2f")
-            total_cost = quantity * unit_cost
-            st.success(f"💰 Total Cost: RM {total_cost:.2f}")
-        
-        supplier = st.text_input("🏢 Supplier", value=st.session_state.inventory_data.get(product, {}).get("supplier", ""))
-        invoice_number = st.text_input("📄 Invoice Number (Optional)")
-        notes = st.text_area("📝 Notes (Optional)", placeholder="Delivery conditions, quality notes, etc.")
-        
-        submitted = st.form_submit_button("✅ Record Purchase", type="primary", use_container_width=True)
-        
-        if submitted and product and quantity > 0:
-            # Add to purchase data
-            purchase_record = {
-                "date": purchase_date.strftime("%Y-%m-%d"),
-                "item": product,
-                "quantity": quantity,
-                "unit_cost": unit_cost,
-                "supplier": supplier,
-                "invoice_number": invoice_number,
-                "notes": notes,
-                "timestamp": datetime.now().strftime("%H:%M:%S")
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Unit Price": st.column_config.NumberColumn("Unit Price (RM)", format="%.2f"),
+                "Total": st.column_config.NumberColumn("Total (RM)", format="%.2f")
             }
-            st.session_state.purchase_data.append(purchase_record)
-            
-            # Update inventory
-            st.session_state.inventory_data[product]["current_stock"] += quantity
-            
-            st.success(f"✅ Purchase recorded: {quantity} x {product} for RM {total_cost:.2f}")
-            
-            # Show updated stock level
-            new_stock = st.session_state.inventory_data[product]["current_stock"]
-            st.info(f"📦 New stock level for {product}: {new_stock} units")
-            
-            st.rerun()
+        )
 
-def show_purchase_history():
-    st.markdown("### 📊 Purchase History")
-    
-    if not st.session_state.purchase_data:
-        st.info("💡 No purchases recorded yet. Use the Record Purchase tab to start tracking!")
-        return
-    
-    df_purchases = pd.DataFrame(st.session_state.purchase_data)
-    df_purchases["Total Cost"] = df_purchases["quantity"] * df_purchases["unit_cost"]
-    df_purchases["Date"] = pd.to_datetime(df_purchases["date"])
-    
-    # Display purchases
-    display_df = df_purchases.copy()
-    display_df["Date"] = display_df["Date"].dt.strftime("%Y-%m-%d")
-    display_df = display_df[["Date", "item", "quantity", "unit_cost", "Total Cost", "supplier", "invoice_number"]].sort_values("Date", ascending=False)
-    display_df.columns = ["Date", "Product", "Qty", "Unit Cost", "Total Cost", "Supplier", "Invoice #"]
-    
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "Unit Cost": st.column_config.NumberColumn("Unit Cost (RM)", format="%.2f"),
-            "Total Cost": st.column_config.NumberColumn("Total Cost (RM)", format="%.2f")
-        }
-    )
-
-def show_enhanced_analytics():
+def show_purchases():
     st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.2rem;">📈 Business Analytics</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Insights and performance metrics</p>
+    <div class="chamomile-header">
+        <h1>🛒 Purchase Management</h1>
+        <p>Track purchases and supplier information</p>
     </div>
     """, unsafe_allow_html=True)
     
-    if not st.session_state.sales_data:
-        st.info("💡 No sales data available for analytics. Record some sales first!")
-        return
-    
-    # Analytics implementation here
-    st.info("🚧 Advanced analytics coming soon!")
+    st.info("🚧 Purchase management features coming soon!")
 
-def show_enhanced_settings():
+def show_analytics():
     st.markdown("""
-    <div class="custom-header">
-        <h1 style="margin: 0; font-size: 2.2rem;">⚙️ Settings</h1>
-        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Configure your system preferences</p>
+    <div class="chamomile-header">
+        <h1>📈 Business Analytics</h1>
+        <p>Insights and performance metrics</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Settings implementation here
+    st.info("🚧 Advanced analytics features coming soon!")
+
+def show_settings():
+    st.markdown("""
+    <div class="chamomile-header">
+        <h1>⚙️ Settings</h1>
+        <p>Configure your system preferences</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.info("🚧 Settings panel coming soon!")
 
 if __name__ == "__main__":
