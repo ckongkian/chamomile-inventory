@@ -1,10 +1,24 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import json
+from typing import Dict, List
+
+# Configure the page with Chamomile branding
+st.set_page_config(
+    page_title="🌼 Chamomile Tea Inventory",
+    page_icon="🌼",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 # Chamomile-themed CSS with your exact color palette
 st.markdown("""
 <style>
-    /* Import Chamomile fonts */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
     
-    /* Global styling with your exact colors */
     .main > div {
         padding-top: 1rem;
         font-family: 'Poppins', sans-serif;
@@ -12,19 +26,16 @@ st.markdown("""
         color: #5A3E36 !important;
     }
     
-    /* Force all text to use your color scheme */
     * {
         color: #5A3E36 !important;
     }
     
-    /* Main content background - Light Peach */
     .main .block-container {
         background-color: #F9E1D3 !important;
         padding: 2rem 1rem;
         max-width: 1200px;
     }
     
-    /* Sidebar with Footer Brown background */
     .css-1d391kg {
         background: linear-gradient(180deg, #5A3E36 0%, #6B4B3E 100%);
         border-right: 3px solid #EFDD86;
@@ -34,16 +45,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    .css-1d391kg .stMarkdown {
-        color: #FFFFFF !important;
-    }
-    
-    .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
-        color: #FFFFFF !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    /* Brand header with Light Yellow background */
     .chamomile-header {
         background: linear-gradient(135deg, #EFDD86 0%, #F4E49C 100%);
         color: #5A3E36 !important;
@@ -61,7 +62,6 @@ st.markdown("""
         font-size: 2.8rem;
         font-weight: 700;
         font-family: 'Playfair Display', serif;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
     
     .chamomile-header p {
@@ -72,7 +72,6 @@ st.markdown("""
         opacity: 0.8;
     }
     
-    /* Metrics cards with White background */
     .stMetric {
         background: #FFFFFF !important;
         border: 3px solid #EFDD86 !important;
@@ -106,7 +105,6 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
-    /* Alert styles with your color scheme */
     .alert-critical {
         background: #FFFFFF !important;
         border: 3px solid #dc2626 !important;
@@ -161,7 +159,6 @@ st.markdown("""
         font-family: 'Playfair Display', serif;
     }
     
-    /* Section headers with Footer Brown background */
     .section-header {
         background: linear-gradient(135deg, #5A3E36 0%, #6B4B3E 100%);
         color: #FFFFFF !important;
@@ -178,7 +175,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
     
-    /* Buttons with WhatsApp Green */
     .stButton > button {
         background: linear-gradient(135deg, #25D366, #20B858) !important;
         color: #FFFFFF !important;
@@ -198,7 +194,6 @@ st.markdown("""
         background: linear-gradient(135deg, #20B858, #1da851) !important;
     }
     
-    /* Form elements with White background */
     .stSelectbox > div > div,
     .stNumberInput > div > div,
     .stTextInput > div > div,
@@ -211,15 +206,6 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
     }
     
-    .stSelectbox > div > div:focus,
-    .stNumberInput > div > div:focus,
-    .stTextInput > div > div:focus,
-    .stTextArea > div > div:focus {
-        border-color: #5A3E36 !important;
-        box-shadow: 0 0 0 2px rgba(90, 62, 54, 0.2);
-    }
-    
-    /* Form labels with Dark Brown text */
     .stSelectbox label, 
     .stNumberInput label, 
     .stTextInput label, 
@@ -230,7 +216,6 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
     }
     
-    /* Tables with White background */
     .stDataFrame {
         background: #FFFFFF !important;
         border: 3px solid #EFDD86 !important;
@@ -260,7 +245,6 @@ st.markdown("""
         border-bottom: 1px solid #EFDD86 !important;
     }
     
-    /* Tabs with White background */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
         background: transparent !important;
@@ -282,7 +266,6 @@ st.markdown("""
         border-color: #5A3E36 !important;
     }
     
-    /* Radio buttons with White background */
     .stRadio > div {
         background: #FFFFFF !important;
         border: 2px solid #EFDD86 !important;
@@ -296,7 +279,6 @@ st.markdown("""
         font-family: 'Poppins', sans-serif;
     }
     
-    /* Notifications with White background */
     [data-testid="stNotificationContentInfo"] {
         background: #FFFFFF !important;
         border: 2px solid #EFDD86 !important;
@@ -329,454 +311,15 @@ st.markdown("""
         border-radius: 10px;
     }
     
-    /* Progress bars with WhatsApp Green */
     .stProgress > div > div {
         background: linear-gradient(90deg, #25D366, #20B858) !important;
         border-radius: 10px;
     }
     
-    /* Plotly charts with White background */
     .js-plotly-plot {
         background: #FFFFFF !important;
         border-radius: 12px;
         border: 2px solid #EFDD86;
-    }
-    
-    /* Custom progress bar for stock levels */
-    .stock-progress {
-        background: #F9E1D3;
-        border-radius: 15px;
-        height: 25px;
-        margin: 1rem 0;
-        border: 2px solid #EFDD86;
-        overflow: hidden;
-    }
-    
-    .stock-progress-fill {
-        height: 100%;
-        border-radius: 13px;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    /* Secondary text with Gray color */
-    .secondary-text {
-        color: #6B7280 !important;
-        font-size: 0.9rem;
-        opacity: 0.8;
-    }
-    
-    /* Status indicators */
-    .status-critical { 
-        background: #dc2626; 
-        color: #FFFFFF; 
-        padding: 0.3rem 0.8rem; 
-        border-radius: 15px; 
-        font-size: 0.8rem; 
-        font-weight: 600; 
-    }
-    .status-warning { 
-        background: #EFDD86; 
-        color: #5A3E36; 
-        padding: 0.3rem 0.8rem; 
-        border-radius: 15px; 
-        font-size: 0.8rem; 
-        font-weight: 600; 
-    }
-    .status-normal { 
-        background: #25D366; 
-        color: #FFFFFF; 
-        padding: 0.3rem 0.8rem; 
-        border-radius: 15px; 
-        font-size: 0.8rem; 
-        font-weight: 600; 
-    }
-</style>
-""")import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
-import json
-from typing import Dict, List
-
-# Configure the page with Chamomile branding
-st.set_page_config(
-    page_title="🌼 Chamomile Tea Inventory",
-    page_icon="🌼",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Chamomile-themed CSS with warm, relaxing colors
-st.markdown("""
-<style>
-    /* Import Chamomile fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
-    
-    /* Global styling with Chamomile theme */
-    .main > div {
-        padding-top: 1rem;
-        font-family: 'Poppins', sans-serif;
-        background-color: #F9E1D3 !important;
-        color: #5A3E36 !important;
-    }
-    
-    /* Force all text to be readable */
-    * {
-        color: #5A3E36 !important;
-    }
-    
-    /* Main content background */
-    .main .block-container {
-        background-color: #F9E1D3 !important;
-        padding: 2rem 1rem;
-        max-width: 1200px;
-    }
-    
-    /* Sidebar with Chamomile colors */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #5A3E36 0%, #8B6F47 100%);
-        border-right: 3px solid #EFDD86;
-    }
-    
-    .css-1d391kg * {
-        color: #FFFFFF !important;
-    }
-    
-    .css-1d391kg .stMarkdown {
-        color: #FFFFFF !important;
-    }
-    
-    .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
-        color: #FFFFFF !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    /* Brand header with Chamomile styling */
-    .chamomile-header {
-        background: linear-gradient(135deg, #EFDD86 0%, #F4E49C 100%);
-        color: #5A3E36 !important;
-        padding: 2rem 1.5rem;
-        border-radius: 15px;
-        margin: 1rem 0 2rem 0;
-        text-align: center;
-        box-shadow: 0 6px 20px rgba(90, 62, 54, 0.15);
-        border: 2px solid #5A3E36;
-    }
-    
-    .chamomile-header h1 {
-        color: #5A3E36 !important;
-        margin: 0;
-        font-size: 2.8rem;
-        font-weight: 700;
-        font-family: 'Playfair Display', serif;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    
-    .chamomile-header p {
-        color: #5A3E36 !important;
-        margin: 0.5rem 0 0 0;
-        font-size: 1.1rem;
-        font-style: italic;
-        opacity: 0.8;
-    }
-    
-    /* Metrics cards with warm styling */
-    .stMetric {
-        background: #FFFFFF !important;
-        border: 3px solid #EFDD86 !important;
-        padding: 1.5rem;
-        border-radius: 15px;
-        margin: 0.5rem 0;
-        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .stMetric:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 25px rgba(90, 62, 54, 0.2);
-        border-color: #5A3E36;
-    }
-    
-    .stMetric label {
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-    }
-    
-    .stMetric [data-testid="metric-value"] {
-        color: #5A3E36 !important;
-        font-weight: 700 !important;
-        font-size: 2rem !important;
-    }
-    
-    .stMetric [data-testid="metric-delta"] {
-        color: #25D366 !important;
-        font-weight: 600 !important;
-    }
-    
-    /* Alert styles with Chamomile theme */
-    .alert-critical {
-        background: #FFFFFF !important;
-        border: 3px solid #dc2626 !important;
-        border-left: 8px solid #dc2626 !important;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
-    }
-    
-    .alert-critical h4 {
-        color: #dc2626 !important;
-        font-weight: 700 !important;
-        font-size: 1.3rem !important;
-        margin: 0 0 0.5rem 0 !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    .alert-warning {
-        background: #FFFFFF !important;
-        border: 3px solid #EFDD86 !important;
-        border-left: 8px solid #EFDD86 !important;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(239, 221, 134, 0.2);
-    }
-    
-    .alert-warning h4 {
-        color: #5A3E36 !important;
-        font-weight: 700 !important;
-        font-size: 1.3rem !important;
-        margin: 0 0 0.5rem 0 !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    .alert-success {
-        background: #FFFFFF !important;
-        border: 3px solid #25D366 !important;
-        border-left: 8px solid #25D366 !important;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.15);
-    }
-    
-    .alert-success h4 {
-        color: #25D366 !important;
-        font-weight: 700 !important;
-        font-size: 1.3rem !important;
-        margin: 0 0 0.5rem 0 !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    /* Section headers */
-    .section-header {
-        background: linear-gradient(135deg, #5A3E36 0%, #8B6F47 100%);
-        color: #FFFFFF !important;
-        padding: 1.2rem 1.5rem;
-        border-radius: 12px;
-        margin: 2rem 0 1rem 0;
-        font-weight: 600;
-        font-size: 1.3rem;
-        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.2);
-        font-family: 'Playfair Display', serif;
-    }
-    
-    .section-header * {
-        color: #FFFFFF !important;
-    }
-    
-    /* Buttons with Chamomile styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #25D366, #20B858) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 12px;
-        padding: 0.8rem 2rem;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
-        background: linear-gradient(135deg, #20B858, #1da851) !important;
-    }
-    
-    /* Form elements */
-    .stSelectbox > div > div,
-    .stNumberInput > div > div,
-    .stTextInput > div > div,
-    .stTextArea > div > div,
-    .stDateInput > div > div {
-        background-color: #FFFFFF !important;
-        border: 2px solid #EFDD86 !important;
-        border-radius: 10px;
-        color: #5A3E36 !important;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    .stSelectbox > div > div:focus,
-    .stNumberInput > div > div:focus,
-    .stTextInput > div > div:focus,
-    .stTextArea > div > div:focus {
-        border-color: #5A3E36 !important;
-        box-shadow: 0 0 0 2px rgba(90, 62, 54, 0.2);
-    }
-    
-    /* Form labels */
-    .stSelectbox label, 
-    .stNumberInput label, 
-    .stTextInput label, 
-    .stTextArea label,
-    .stDateInput label {
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    /* Tables */
-    .stDataFrame {
-        background: #FFFFFF !important;
-        border: 3px solid #EFDD86 !important;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
-    }
-    
-    .stDataFrame table {
-        background: #FFFFFF !important;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    .stDataFrame th {
-        background: linear-gradient(135deg, #EFDD86, #F4E49C) !important;
-        color: #5A3E36 !important;
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        border-bottom: 2px solid #5A3E36 !important;
-        font-family: 'Playfair Display', serif;
-    }
-    
-    .stDataFrame td {
-        color: #5A3E36 !important;
-        font-weight: 500 !important;
-        font-size: 0.95rem !important;
-        border-bottom: 1px solid #EFDD86 !important;
-    }
-    
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-        background: transparent !important;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        background: #FFFFFF !important;
-        border: 2px solid #EFDD86 !important;
-        border-radius: 10px;
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        padding: 0.8rem 1.5rem !important;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #5A3E36, #8B6F47) !important;
-        color: #FFFFFF !important;
-        border-color: #5A3E36 !important;
-    }
-    
-    /* Radio buttons */
-    .stRadio > div {
-        background: #FFFFFF !important;
-        border: 2px solid #EFDD86 !important;
-        border-radius: 10px;
-        padding: 1rem;
-    }
-    
-    .stRadio label {
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        font-family: 'Poppins', sans-serif;
-    }
-    
-    /* Notifications */
-    [data-testid="stNotificationContentInfo"] {
-        background: #FFFFFF !important;
-        border: 2px solid #EFDD86 !important;
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        border-radius: 10px;
-    }
-    
-    [data-testid="stNotificationContentSuccess"] {
-        background: #FFFFFF !important;
-        border: 2px solid #25D366 !important;
-        color: #25D366 !important;
-        font-weight: 600 !important;
-        border-radius: 10px;
-    }
-    
-    [data-testid="stNotificationContentWarning"] {
-        background: #FFFFFF !important;
-        border: 2px solid #EFDD86 !important;
-        color: #5A3E36 !important;
-        font-weight: 600 !important;
-        border-radius: 10px;
-    }
-    
-    [data-testid="stNotificationContentError"] {
-        background: #FFFFFF !important;
-        border: 2px solid #dc2626 !important;
-        color: #dc2626 !important;
-        font-weight: 600 !important;
-        border-radius: 10px;
-    }
-    
-    /* Progress bars */
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #25D366, #20B858) !important;
-        border-radius: 10px;
-    }
-    
-    /* Plotly charts */
-    .js-plotly-plot {
-        background: #FFFFFF !important;
-        border-radius: 12px;
-        border: 2px solid #EFDD86;
-    }
-    
-    /* Custom progress bar for stock levels */
-    .stock-progress {
-        background: #F9E1D3;
-        border-radius: 15px;
-        height: 25px;
-        margin: 1rem 0;
-        border: 2px solid #EFDD86;
-        overflow: hidden;
-    }
-    
-    .stock-progress-fill {
-        height: 100%;
-        border-radius: 13px;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 0.9rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -797,8 +340,7 @@ class InventoryManager:
                     "unit_price": 4.05,
                     "supplier": "Immediate",
                     "category": "Sweeteners",
-                    "sku": "IN-0001",
-                    "status": "Time to reorder"
+                    "sku": "IN-0001"
                 },
                 "White Sugar 1000ml": {
                     "current_stock": 0,
@@ -808,8 +350,7 @@ class InventoryManager:
                     "unit_price": 2.85,
                     "supplier": "Immediate",
                     "category": "Sweeteners",
-                    "sku": "IN-0002",
-                    "status": "Out of Stock"
+                    "sku": "IN-0002"
                 },
                 "可乐冰棒糖": {
                     "current_stock": 9,
@@ -819,8 +360,7 @@ class InventoryManager:
                     "unit_price": 19.02,
                     "supplier": "from Shopee",
                     "category": "Sweeteners",
-                    "sku": "IN-0003",
-                    "status": "Time to reorder"
+                    "sku": "IN-0003"
                 },
                 "Oatside Oatmilk": {
                     "current_stock": 49,
@@ -830,8 +370,7 @@ class InventoryManager:
                     "unit_price": 9.90,
                     "supplier": "from Shopee",
                     "category": "Oat Milk",
-                    "sku": "IN-0004",
-                    "status": "Reorder soon"
+                    "sku": "IN-0004"
                 },
                 "English Tea Shop Lavender": {
                     "current_stock": 10,
@@ -841,8 +380,7 @@ class InventoryManager:
                     "unit_price": 18.26,
                     "supplier": "from Shopee",
                     "category": "Tea",
-                    "sku": "IN-0005",
-                    "status": "In stock"
+                    "sku": "IN-0005"
                 },
                 "BOH Jasmine Green Tea": {
                     "current_stock": 16,
@@ -852,8 +390,7 @@ class InventoryManager:
                     "unit_price": 11.71,
                     "supplier": "from Shopee",
                     "category": "Tea",
-                    "sku": "IN-0006",
-                    "status": "In stock"
+                    "sku": "IN-0006"
                 },
                 "BOH Chamomile Tea": {
                     "current_stock": 178,
@@ -863,8 +400,7 @@ class InventoryManager:
                     "unit_price": 140.32,
                     "supplier": "from Shopee",
                     "category": "Tea",
-                    "sku": "IN-0007",
-                    "status": "Reorder soon"
+                    "sku": "IN-0007"
                 },
                 "Celestial Seasonings Country Peach": {
                     "current_stock": 56,
@@ -874,8 +410,7 @@ class InventoryManager:
                     "unit_price": 15.00,
                     "supplier": "from Shopee/local",
                     "category": "Tea",
-                    "sku": "IN-0008",
-                    "status": "In stock"
+                    "sku": "IN-0008"
                 },
                 "BOH Lychee with Rose Tea": {
                     "current_stock": 13,
@@ -885,8 +420,7 @@ class InventoryManager:
                     "unit_price": 9.43,
                     "supplier": "from Shopee",
                     "category": "Tea",
-                    "sku": "IN-0009",
-                    "status": "In stock"
+                    "sku": "IN-0009"
                 },
                 "Celestial Seasonings Raspberry Zinger": {
                     "current_stock": 14,
@@ -896,8 +430,7 @@ class InventoryManager:
                     "unit_price": 21.10,
                     "supplier": "from Shopee/local",
                     "category": "Tea",
-                    "sku": "IN-0010",
-                    "status": "Reorder soon"
+                    "sku": "IN-0010"
                 },
                 "Ice cube": {
                     "current_stock": 0,
@@ -907,8 +440,7 @@ class InventoryManager:
                     "unit_price": 2.50,
                     "supplier": "Immediate",
                     "category": "Other",
-                    "sku": "IN-0011",
-                    "status": "Out of Stock"
+                    "sku": "IN-0011"
                 },
                 "Bottle 500ml": {
                     "current_stock": 960,
@@ -918,8 +450,7 @@ class InventoryManager:
                     "unit_price": 2200.62,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0012a",
-                    "status": "In stock"
+                    "sku": "IN-0012a"
                 },
                 "Bottle 350ml": {
                     "current_stock": 0,
@@ -929,8 +460,7 @@ class InventoryManager:
                     "unit_price": 3108.00,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0012b",
-                    "status": "Out of Stock"
+                    "sku": "IN-0012b"
                 },
                 "Bottle 330ml": {
                     "current_stock": 0,
@@ -940,19 +470,7 @@ class InventoryManager:
                     "unit_price": 2160.00,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0012c",
-                    "status": "Out of Stock"
-                },
-                "Plastic bag (100/pack)": {
-                    "current_stock": 8,
-                    "min_stock": 4,
-                    "max_stock": 15,
-                    "unit_cost": 53.33,
-                    "unit_price": 53.33,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0013",
-                    "status": "In stock"
+                    "sku": "IN-0012c"
                 },
                 "Napkin (50/pack)": {
                     "current_stock": 1,
@@ -962,8 +480,7 @@ class InventoryManager:
                     "unit_price": 31.00,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0014",
-                    "status": "Time to reorder"
+                    "sku": "IN-0014"
                 },
                 "Straw (500/pack)": {
                     "current_stock": 0.5,
@@ -973,8 +490,7 @@ class InventoryManager:
                     "unit_price": 23.87,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0015",
-                    "status": "Time to reorder"
+                    "sku": "IN-0015"
                 },
                 "Sticker": {
                     "current_stock": 0,
@@ -984,74 +500,7 @@ class InventoryManager:
                     "unit_price": 150.00,
                     "supplier": "Immediate, use printing instead now",
                     "category": "Packaging",
-                    "sku": "IN-0016",
-                    "status": "Out of Stock"
-                },
-                "Label for Lavender Chamomile": {
-                    "current_stock": 500,
-                    "min_stock": 90,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0017",
-                    "status": "In stock"
-                },
-                "Label for Jasmine Green Tea": {
-                    "current_stock": 500,
-                    "min_stock": 90,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0018",
-                    "status": "In stock"
-                },
-                "Label for Chamomile": {
-                    "current_stock": 500,
-                    "min_stock": 60,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0019",
-                    "status": "In stock"
-                },
-                "Label for Peach Passion": {
-                    "current_stock": 500,
-                    "min_stock": 210,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0020",
-                    "status": "In stock"
-                },
-                "Label for Lychee with Rose": {
-                    "current_stock": 500,
-                    "min_stock": 75,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0021",
-                    "status": "In stock"
-                },
-                "Label for Raspberry": {
-                    "current_stock": 500,
-                    "min_stock": 75,
-                    "max_stock": 2500,
-                    "unit_cost": 0.14,
-                    "unit_price": 347.00,
-                    "supplier": "from Taobao",
-                    "category": "Packaging",
-                    "sku": "IN-0022",
-                    "status": "In stock"
+                    "sku": "IN-0016"
                 },
                 "Tester cup (50/pack)": {
                     "current_stock": 4,
@@ -1061,19 +510,17 @@ class InventoryManager:
                     "unit_price": 54.40,
                     "supplier": "from Taobao",
                     "category": "Packaging",
-                    "sku": "IN-0023",
-                    "status": "Time to reorder"
+                    "sku": "IN-0023"
                 }
             }
         
         if 'sales_data' not in st.session_state:
             st.session_state.sales_data = [
                 {"date": "2025-06-01", "item": "BOH Chamomile Tea", "quantity": 5, "unit_price": 12.00},
-                {"date": "2025-06-01", "item": "Oatside Barismilk", "quantity": 2, "unit_price": 9.90},
+                {"date": "2025-06-01", "item": "Oatside Oatmilk", "quantity": 2, "unit_price": 9.90},
                 {"date": "2025-06-02", "item": "English Tea Shop Lavender", "quantity": 3, "unit_price": 18.26},
                 {"date": "2025-06-02", "item": "BOH Jasmine Green Tea", "quantity": 4, "unit_price": 11.71},
                 {"date": "2025-06-03", "item": "Celestial Seasonings Country Peach", "quantity": 6, "unit_price": 15.00},
-                {"date": "2025-06-03", "item": "BOH Lychee with Rose Tea", "quantity": 2, "unit_price": 9.43},
             ]
         
         if 'purchase_data' not in st.session_state:
@@ -1092,7 +539,7 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Navigation with proper session state handling
+        # Navigation
         pages = [
             "📊 Dashboard",
             "📦 Inventory", 
@@ -1102,7 +549,6 @@ def main():
             "⚙️ Settings"
         ]
         
-        # Initialize navigation in session state
         if "current_page" not in st.session_state:
             st.session_state.current_page = "📊 Dashboard"
         
@@ -1110,10 +556,9 @@ def main():
                                 index=pages.index(st.session_state.current_page) if st.session_state.current_page in pages else 0,
                                 key="nav_radio")
         
-        # Update current page
         st.session_state.current_page = selected_page
         
-        # Quick stats in sidebar
+        # Quick stats
         st.markdown("---")
         inventory_data = st.session_state.inventory_data
         total_value = sum(item["current_stock"] * item["unit_cost"] for item in inventory_data.values())
@@ -1129,7 +574,7 @@ def main():
         st.markdown(f"**📅 {current_time.strftime('%B %d, %Y')}**")
         st.markdown(f"**🕐 {current_time.strftime('%I:%M %p')}**")
     
-    # Route to pages based on selection
+    # Route to pages
     if st.session_state.current_page == "📊 Dashboard":
         show_dashboard()
     elif st.session_state.current_page == "📦 Inventory":
@@ -1142,6 +587,14 @@ def main():
         show_analytics()
     elif st.session_state.current_page == "⚙️ Settings":
         show_settings()
+
+def get_stock_status(current, minimum):
+    if current == 0:
+        return "Critical"
+    elif current <= minimum:
+        return "Low"
+    else:
+        return "Normal"
 
 def show_dashboard():
     # Chamomile-themed header
@@ -1168,11 +621,9 @@ def show_dashboard():
         st.metric("🌼 Products", total_items, delta="Active")
     
     with col3:
-        alert_color = "normal" if len(low_stock_items) == 0 else "inverse"
         st.metric("⚠️ Low Stock", len(low_stock_items), delta=f"-{len(low_stock_items)}" if low_stock_items else "All Good!")
     
     with col4:
-        critical_color = "normal" if len(out_of_stock) == 0 else "inverse"
         st.metric("🚨 Critical", len(out_of_stock), delta=f"-{len(out_of_stock)}" if out_of_stock else "All Good!")
     
     # Stock Alerts
@@ -1224,63 +675,6 @@ def show_dashboard():
             st.session_state.current_page = "📈 Analytics"
             st.rerun()
     
-    # Stock Overview Charts
-    st.markdown('<div class="section-header">📊 Stock Levels Overview</div>', unsafe_allow_html=True)
-    
-    # Create stock data
-    df_stock = pd.DataFrame([
-        {
-            "Product": name.replace(" ", "\n") if len(name) > 15 else name,
-            "Current Stock": item["current_stock"],
-            "Min Stock": item["min_stock"],
-            "Max Stock": item["max_stock"],
-            "Category": item["category"],
-            "Status": get_stock_status(item["current_stock"], item["min_stock"]),
-            "Fill %": (item["current_stock"] / item["max_stock"] * 100) if item["max_stock"] > 0 else 0
-        }
-        for name, item in inventory_data.items()
-    ])
-    
-    # Charts side by side
-    chart_col1, chart_col2 = st.columns(2)
-    
-    with chart_col1:
-        fig1 = px.bar(
-            df_stock, 
-            x="Product", 
-            y=["Current Stock", "Min Stock"], 
-            title="📊 Current vs Minimum Stock Levels",
-            color_discrete_map={"Current Stock": "#5A3E36", "Min Stock": "#EFDD86"},
-            height=400
-        )
-        fig1.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(255,255,255,1)',
-            font=dict(family="Poppins, sans-serif", color="#5A3E36"),
-            title_font_size=16,
-            title_font_color="#5A3E36"
-        )
-        st.plotly_chart(fig1, use_container_width=True)
-    
-    with chart_col2:
-        status_counts = df_stock['Status'].value_counts()
-        fig2 = px.pie(
-            values=status_counts.values, 
-            names=status_counts.index,
-            title="📈 Stock Status Distribution",
-            hole=0.4,
-            color_discrete_map={"Critical": "#dc2626", "Low": "#EFDD86", "Normal": "#25D366"},
-            height=400
-        )
-        fig2.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(255,255,255,1)',
-            font=dict(family="Poppins, sans-serif", color="#5A3E36"),
-            title_font_size=16,
-            title_font_color="#5A3E36"
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-    
     # Recent Sales Activity
     st.markdown('<div class="section-header">📝 Recent Sales Activity</div>', unsafe_allow_html=True)
     
@@ -1306,30 +700,22 @@ def show_dashboard():
         today = datetime.now().strftime("%Y-%m-%d")
         week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         
-        df_sales_full = pd.DataFrame(st.session_state.sales_data)
-        df_sales_full["Total"] = df_sales_full["quantity"] * df_sales_full["unit_price"]
+        df_sales = pd.DataFrame(st.session_state.sales_data)
+        df_sales["Total"] = df_sales["quantity"] * df_sales["unit_price"]
         
         with col1:
-            today_sales = df_sales_full[df_sales_full["date"] == today]["Total"].sum()
+            today_sales = df_sales[df_sales["date"] == today]["Total"].sum()
             st.metric("Today's Sales", f"RM {today_sales:.2f}")
         
         with col2:
-            week_sales = df_sales_full[df_sales_full["date"] >= week_ago]["Total"].sum()
+            week_sales = df_sales[df_sales["date"] >= week_ago]["Total"].sum()
             st.metric("This Week", f"RM {week_sales:.2f}")
         
         with col3:
-            avg_daily = df_sales_full.groupby("date")["Total"].sum().mean() if len(df_sales_full) > 0 else 0
+            avg_daily = df_sales.groupby("date")["Total"].sum().mean() if len(df_sales) > 0 else 0
             st.metric("Daily Average", f"RM {avg_daily:.2f}")
     else:
         st.info("💡 No sales recorded yet. Use the Sales page to start tracking!")
-
-def get_stock_status(current, minimum):
-    if current == 0:
-        return "Critical"
-    elif current <= minimum:
-        return "Low"
-    else:
-        return "Normal"
 
 def show_inventory():
     st.markdown("""
@@ -1370,6 +756,7 @@ def show_current_inventory():
         status = get_stock_status(item["current_stock"], item["min_stock"])
         df_inventory.append({
             "Product": name,
+            "SKU": item.get("sku", ""),
             "Category": item["category"],
             "Current": item["current_stock"],
             "Min": item["min_stock"],
@@ -1377,7 +764,6 @@ def show_current_inventory():
             "Cost": item["unit_cost"],
             "Price": item["unit_price"],
             "Value": item["current_stock"] * item["unit_cost"],
-            "Margin": ((item["unit_price"] - item["unit_cost"]) / item["unit_price"] * 100) if item["unit_price"] > 0 else 0,
             "Supplier": item["supplier"],
             "Status": status
         })
@@ -1413,7 +799,6 @@ def show_current_inventory():
             "Cost": st.column_config.NumberColumn("Cost (RM)", format="%.2f"),
             "Price": st.column_config.NumberColumn("Price (RM)", format="%.2f"),
             "Value": st.column_config.NumberColumn("Value (RM)", format="%.2f"),
-            "Margin": st.column_config.NumberColumn("Margin (%)", format="%.1f"),
         }
     )
     
@@ -1424,10 +809,11 @@ def show_current_inventory():
     with col2:
         st.metric("Total Value", f"RM {df_inventory['Value'].sum():.2f}")
     with col3:
-        st.metric("Avg Margin", f"{df_inventory['Margin'].mean():.1f}%")
+        critical_count = len(df_inventory[df_inventory["Current"] == 0])
+        st.metric("Critical Items", critical_count)
     with col4:
-        low_stock_count = len(df_inventory[df_inventory["Status"].isin(["Critical", "Low"])])
-        st.metric("Need Attention", low_stock_count)
+        low_stock_count = len(df_inventory[df_inventory["Status"] == "Low"])
+        st.metric("Low Stock Items", low_stock_count)
 
 def show_add_product():
     st.markdown("### ➕ Add New Product")
@@ -1473,8 +859,7 @@ def show_add_product():
                         "unit_price": unit_price,
                         "supplier": supplier,
                         "category": category,
-                        "sku": sku,
-                        "status": "In stock" if initial_stock > min_stock else "Low stock"
+                        "sku": sku
                     }
                     st.success(f"✅ {product_name} added successfully!")
                     st.rerun()
@@ -1503,22 +888,6 @@ def show_update_stock():
             **Current Status:** {status}  
             **Stock Level:** {current_stock} / {max_stock} units ({fill_percentage:.1f}% full)
             """)
-        
-        # Visual stock indicator with Chamomile colors
-        if status == "Critical":
-            color = "#dc2626"
-        elif status == "Low":
-            color = "#EFDD86"
-        else:
-            color = "#25D366"
-        
-        st.markdown(f"""
-        <div class="stock-progress">
-            <div class="stock-progress-fill" style="background: {color}; width: {fill_percentage}%;">
-                {fill_percentage:.1f}%
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
         
         col_add, col_remove = st.columns(2)
         
@@ -1643,58 +1012,21 @@ def show_sales_history():
     df_sales["Total"] = df_sales["quantity"] * df_sales["unit_price"]
     df_sales["Date"] = pd.to_datetime(df_sales["date"])
     
-    # Date range filter
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        start_date = st.date_input("📅 From Date", df_sales["Date"].min().date())
-    with col2:
-        end_date = st.date_input("📅 To Date", df_sales["Date"].max().date())
-    with col3:
-        product_filter = st.selectbox("🌼 Product Filter", ["All Products"] + df_sales["item"].unique().tolist())
+    # Display sales table
+    display_df = df_sales.copy()
+    display_df["Date"] = display_df["Date"].dt.strftime("%Y-%m-%d")
+    display_df = display_df[["Date", "item", "quantity", "unit_price", "Total", "customer", "notes"]].sort_values("Date", ascending=False)
+    display_df.columns = ["Date", "Product", "Qty", "Unit Price", "Total", "Customer", "Notes"]
     
-    # Apply filters
-    filtered_df = df_sales[
-        (df_sales["Date"].dt.date >= start_date) & 
-        (df_sales["Date"].dt.date <= end_date)
-    ]
-    
-    if product_filter != "All Products":
-        filtered_df = filtered_df[filtered_df["item"] == product_filter]
-    
-    # Sales metrics
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        total_revenue = filtered_df["Total"].sum()
-        st.metric("💰 Total Revenue", f"RM {total_revenue:.2f}")
-    
-    with col2:
-        total_units = filtered_df["quantity"].sum()
-        st.metric("📦 Units Sold", f"{total_units:,}")
-    
-    with col3:
-        avg_sale = filtered_df["Total"].mean() if len(filtered_df) > 0 else 0
-        st.metric("📊 Avg Sale Value", f"RM {avg_sale:.2f}")
-    
-    with col4:
-        num_transactions = len(filtered_df)
-        st.metric("🧾 Transactions", f"{num_transactions:,}")
-    
-    # Sales table
-    if len(filtered_df) > 0:
-        display_df = filtered_df.copy()
-        display_df["Date"] = display_df["Date"].dt.strftime("%Y-%m-%d")
-        display_df = display_df[["Date", "item", "quantity", "unit_price", "Total", "customer", "notes"]].sort_values("Date", ascending=False)
-        display_df.columns = ["Date", "Product", "Qty", "Unit Price", "Total", "Customer", "Notes"]
-        
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Unit Price": st.column_config.NumberColumn("Unit Price (RM)", format="%.2f"),
-                "Total": st.column_config.NumberColumn("Total (RM)", format="%.2f")
-            }
-        )
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Unit Price": st.column_config.NumberColumn("Unit Price (RM)", format="%.2f"),
+            "Total": st.column_config.NumberColumn("Total (RM)", format="%.2f")
+        }
+    )
 
 def show_purchases():
     st.markdown("""
