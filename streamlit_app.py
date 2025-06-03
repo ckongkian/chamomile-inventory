@@ -1,4 +1,403 @@
-import streamlit as st
+# Chamomile-themed CSS with your exact color palette
+st.markdown("""
+<style>
+    /* Import Chamomile fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+    
+    /* Global styling with your exact colors */
+    .main > div {
+        padding-top: 1rem;
+        font-family: 'Poppins', sans-serif;
+        background-color: #F9E1D3 !important;
+        color: #5A3E36 !important;
+    }
+    
+    /* Force all text to use your color scheme */
+    * {
+        color: #5A3E36 !important;
+    }
+    
+    /* Main content background - Light Peach */
+    .main .block-container {
+        background-color: #F9E1D3 !important;
+        padding: 2rem 1rem;
+        max-width: 1200px;
+    }
+    
+    /* Sidebar with Footer Brown background */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #5A3E36 0%, #6B4B3E 100%);
+        border-right: 3px solid #EFDD86;
+    }
+    
+    .css-1d391kg * {
+        color: #FFFFFF !important;
+    }
+    
+    .css-1d391kg .stMarkdown {
+        color: #FFFFFF !important;
+    }
+    
+    .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
+        color: #FFFFFF !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Brand header with Light Yellow background */
+    .chamomile-header {
+        background: linear-gradient(135deg, #EFDD86 0%, #F4E49C 100%);
+        color: #5A3E36 !important;
+        padding: 2rem 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0 2rem 0;
+        text-align: center;
+        box-shadow: 0 6px 20px rgba(90, 62, 54, 0.15);
+        border: 2px solid #5A3E36;
+    }
+    
+    .chamomile-header h1 {
+        color: #5A3E36 !important;
+        margin: 0;
+        font-size: 2.8rem;
+        font-weight: 700;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .chamomile-header p {
+        color: #5A3E36 !important;
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        font-style: italic;
+        opacity: 0.8;
+    }
+    
+    /* Metrics cards with White background */
+    .stMetric {
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 0.5rem 0;
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stMetric:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(90, 62, 54, 0.2);
+        border-color: #5A3E36;
+    }
+    
+    .stMetric label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+    
+    .stMetric [data-testid="metric-value"] {
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 2rem !important;
+    }
+    
+    .stMetric [data-testid="metric-delta"] {
+        color: #25D366 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Alert styles with your color scheme */
+    .alert-critical {
+        background: #FFFFFF !important;
+        border: 3px solid #dc2626 !important;
+        border-left: 8px solid #dc2626 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+    }
+    
+    .alert-critical h4 {
+        color: #dc2626 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .alert-warning {
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
+        border-left: 8px solid #EFDD86 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(239, 221, 134, 0.2);
+    }
+    
+    .alert-warning h4 {
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .alert-success {
+        background: #FFFFFF !important;
+        border: 3px solid #25D366 !important;
+        border-left: 8px solid #25D366 !important;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.15);
+    }
+    
+    .alert-success h4 {
+        color: #25D366 !important;
+        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    /* Section headers with Footer Brown background */
+    .section-header {
+        background: linear-gradient(135deg, #5A3E36 0%, #6B4B3E 100%);
+        color: #FFFFFF !important;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        margin: 2rem 0 1rem 0;
+        font-weight: 600;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.2);
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .section-header * {
+        color: #FFFFFF !important;
+    }
+    
+    /* Buttons with WhatsApp Green */
+    .stButton > button {
+        background: linear-gradient(135deg, #25D366, #20B858) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        background: linear-gradient(135deg, #20B858, #1da851) !important;
+    }
+    
+    /* Form elements with White background */
+    .stSelectbox > div > div,
+    .stNumberInput > div > div,
+    .stTextInput > div > div,
+    .stTextArea > div > div,
+    .stDateInput > div > div {
+        background-color: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        color: #5A3E36 !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stSelectbox > div > div:focus,
+    .stNumberInput > div > div:focus,
+    .stTextInput > div > div:focus,
+    .stTextArea > div > div:focus {
+        border-color: #5A3E36 !important;
+        box-shadow: 0 0 0 2px rgba(90, 62, 54, 0.2);
+    }
+    
+    /* Form labels with Dark Brown text */
+    .stSelectbox label, 
+    .stNumberInput label, 
+    .stTextInput label, 
+    .stTextArea label,
+    .stDateInput label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Tables with White background */
+    .stDataFrame {
+        background: #FFFFFF !important;
+        border: 3px solid #EFDD86 !important;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(90, 62, 54, 0.1);
+    }
+    
+    .stDataFrame table {
+        background: #FFFFFF !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stDataFrame th {
+        background: linear-gradient(135deg, #EFDD86, #F4E49C) !important;
+        color: #5A3E36 !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        border-bottom: 2px solid #5A3E36 !important;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .stDataFrame td {
+        color: #5A3E36 !important;
+        font-weight: 500 !important;
+        font-size: 0.95rem !important;
+        border-bottom: 1px solid #EFDD86 !important;
+    }
+    
+    /* Tabs with White background */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+        background: transparent !important;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        padding: 0.8rem 1.5rem !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #5A3E36, #6B4B3E) !important;
+        color: #FFFFFF !important;
+        border-color: #5A3E36 !important;
+    }
+    
+    /* Radio buttons with White background */
+    .stRadio > div {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        border-radius: 10px;
+        padding: 1rem;
+    }
+    
+    .stRadio label {
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Notifications with White background */
+    [data-testid="stNotificationContentInfo"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentSuccess"] {
+        background: #FFFFFF !important;
+        border: 2px solid #25D366 !important;
+        color: #25D366 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentWarning"] {
+        background: #FFFFFF !important;
+        border: 2px solid #EFDD86 !important;
+        color: #5A3E36 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    [data-testid="stNotificationContentError"] {
+        background: #FFFFFF !important;
+        border: 2px solid #dc2626 !important;
+        color: #dc2626 !important;
+        font-weight: 600 !important;
+        border-radius: 10px;
+    }
+    
+    /* Progress bars with WhatsApp Green */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #25D366, #20B858) !important;
+        border-radius: 10px;
+    }
+    
+    /* Plotly charts with White background */
+    .js-plotly-plot {
+        background: #FFFFFF !important;
+        border-radius: 12px;
+        border: 2px solid #EFDD86;
+    }
+    
+    /* Custom progress bar for stock levels */
+    .stock-progress {
+        background: #F9E1D3;
+        border-radius: 15px;
+        height: 25px;
+        margin: 1rem 0;
+        border: 2px solid #EFDD86;
+        overflow: hidden;
+    }
+    
+    .stock-progress-fill {
+        height: 100%;
+        border-radius: 13px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    /* Secondary text with Gray color */
+    .secondary-text {
+        color: #6B7280 !important;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Status indicators */
+    .status-critical { 
+        background: #dc2626; 
+        color: #FFFFFF; 
+        padding: 0.3rem 0.8rem; 
+        border-radius: 15px; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+    }
+    .status-warning { 
+        background: #EFDD86; 
+        color: #5A3E36; 
+        padding: 0.3rem 0.8rem; 
+        border-radius: 15px; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+    }
+    .status-normal { 
+        background: #25D366; 
+        color: #FFFFFF; 
+        padding: 0.3rem 0.8rem; 
+        border-radius: 15px; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+    }
+</style>
+""")import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -387,72 +786,294 @@ class InventoryManager:
         self.load_data()
     
     def load_data(self):
-        """Load data from session state or initialize with sample data"""
+        """Load data from session state or initialize with your updated inventory data"""
         if 'inventory_data' not in st.session_state:
             st.session_state.inventory_data = {
-                "Chamomile Tea Bags": {
-                    "current_stock": 45,
-                    "min_stock": 15,
-                    "max_stock": 100,
-                    "unit_cost": 8.50,
-                    "unit_price": 12.00,
-                    "supplier": "Chamomile Gardens",
-                    "category": "Tea"
-                },
-                "Honey Chamomile Blend": {
-                    "current_stock": 32,
-                    "min_stock": 10,
-                    "max_stock": 80,
-                    "unit_cost": 12.00,
-                    "unit_price": 18.00,
-                    "supplier": "Natural Blends Co",
-                    "category": "Tea"
-                },
-                "Oat Milk Organic": {
-                    "current_stock": 28,
+                "White Sugar 800ml": {
+                    "current_stock": 7,
                     "min_stock": 20,
-                    "max_stock": 60,
-                    "unit_cost": 6.75,
-                    "unit_price": 9.50,
-                    "supplier": "Oat Valley",
-                    "category": "Milk"
+                    "max_stock": 50,
+                    "unit_cost": 4.05,
+                    "unit_price": 4.05,
+                    "supplier": "Immediate",
+                    "category": "Sweeteners",
+                    "sku": "IN-0001",
+                    "status": "Time to reorder"
                 },
-                "Lavender Chamomile": {
+                "White Sugar 1000ml": {
+                    "current_stock": 0,
+                    "min_stock": 20,
+                    "max_stock": 50,
+                    "unit_cost": 2.85,
+                    "unit_price": 2.85,
+                    "supplier": "Immediate",
+                    "category": "Sweeteners",
+                    "sku": "IN-0002",
+                    "status": "Out of Stock"
+                },
+                "可乐冰棒糖": {
+                    "current_stock": 9,
+                    "min_stock": 16,
+                    "max_stock": 40,
+                    "unit_cost": 19.02,
+                    "unit_price": 19.02,
+                    "supplier": "from Shopee",
+                    "category": "Sweeteners",
+                    "sku": "IN-0003",
+                    "status": "Time to reorder"
+                },
+                "Oatside Oatmilk": {
+                    "current_stock": 49,
+                    "min_stock": 44,
+                    "max_stock": 80,
+                    "unit_cost": 9.90,
+                    "unit_price": 9.90,
+                    "supplier": "from Shopee",
+                    "category": "Oat Milk",
+                    "sku": "IN-0004",
+                    "status": "Reorder soon"
+                },
+                "English Tea Shop Lavender": {
+                    "current_stock": 10,
+                    "min_stock": 5,
+                    "max_stock": 30,
+                    "unit_cost": 18.26,
+                    "unit_price": 18.26,
+                    "supplier": "from Shopee",
+                    "category": "Tea",
+                    "sku": "IN-0005",
+                    "status": "In stock"
+                },
+                "BOH Jasmine Green Tea": {
+                    "current_stock": 16,
+                    "min_stock": 6,
+                    "max_stock": 40,
+                    "unit_cost": 11.71,
+                    "unit_price": 11.71,
+                    "supplier": "from Shopee",
+                    "category": "Tea",
+                    "sku": "IN-0006",
+                    "status": "In stock"
+                },
+                "BOH Chamomile Tea": {
+                    "current_stock": 178,
+                    "min_stock": 165,
+                    "max_stock": 300,
+                    "unit_cost": 0.47,
+                    "unit_price": 140.32,
+                    "supplier": "from Shopee",
+                    "category": "Tea",
+                    "sku": "IN-0007",
+                    "status": "Reorder soon"
+                },
+                "Celestial Seasonings Country Peach": {
+                    "current_stock": 56,
+                    "min_stock": 13,
+                    "max_stock": 80,
+                    "unit_cost": 15.00,
+                    "unit_price": 15.00,
+                    "supplier": "from Shopee/local",
+                    "category": "Tea",
+                    "sku": "IN-0008",
+                    "status": "In stock"
+                },
+                "BOH Lychee with Rose Tea": {
+                    "current_stock": 13,
+                    "min_stock": 7,
+                    "max_stock": 30,
+                    "unit_cost": 9.43,
+                    "unit_price": 9.43,
+                    "supplier": "from Shopee",
+                    "category": "Tea",
+                    "sku": "IN-0009",
+                    "status": "In stock"
+                },
+                "Celestial Seasonings Raspberry Zinger": {
+                    "current_stock": 14,
+                    "min_stock": 10,
+                    "max_stock": 35,
+                    "unit_cost": 21.10,
+                    "unit_price": 21.10,
+                    "supplier": "from Shopee/local",
+                    "category": "Tea",
+                    "sku": "IN-0010",
+                    "status": "Reorder soon"
+                },
+                "Ice cube": {
+                    "current_stock": 0,
+                    "min_stock": 20,
+                    "max_stock": 50,
+                    "unit_cost": 2.50,
+                    "unit_price": 2.50,
+                    "supplier": "Immediate",
+                    "category": "Other",
+                    "sku": "IN-0011",
+                    "status": "Out of Stock"
+                },
+                "Bottle 500ml": {
+                    "current_stock": 960,
+                    "min_stock": 600,
+                    "max_stock": 2000,
+                    "unit_cost": 1.10,
+                    "unit_price": 2200.62,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0012a",
+                    "status": "In stock"
+                },
+                "Bottle 350ml": {
+                    "current_stock": 0,
+                    "min_stock": 600,
+                    "max_stock": 3000,
+                    "unit_cost": 1.04,
+                    "unit_price": 3108.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0012b",
+                    "status": "Out of Stock"
+                },
+                "Bottle 330ml": {
+                    "current_stock": 0,
+                    "min_stock": 600,
+                    "max_stock": 2000,
+                    "unit_cost": 1.08,
+                    "unit_price": 2160.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0012c",
+                    "status": "Out of Stock"
+                },
+                "Plastic bag (100/pack)": {
                     "current_stock": 8,
+                    "min_stock": 4,
+                    "max_stock": 15,
+                    "unit_cost": 53.33,
+                    "unit_price": 53.33,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0013",
+                    "status": "In stock"
+                },
+                "Napkin (50/pack)": {
+                    "current_stock": 1,
+                    "min_stock": 4,
+                    "max_stock": 10,
+                    "unit_cost": 3.10,
+                    "unit_price": 31.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0014",
+                    "status": "Time to reorder"
+                },
+                "Straw (500/pack)": {
+                    "current_stock": 0.5,
+                    "min_stock": 100,
+                    "max_stock": 500,
+                    "unit_cost": 0.05,
+                    "unit_price": 23.87,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0015",
+                    "status": "Time to reorder"
+                },
+                "Sticker": {
+                    "current_stock": 0,
+                    "min_stock": 500,
+                    "max_stock": 1000,
+                    "unit_cost": 0.15,
+                    "unit_price": 150.00,
+                    "supplier": "Immediate, use printing instead now",
+                    "category": "Packaging",
+                    "sku": "IN-0016",
+                    "status": "Out of Stock"
+                },
+                "Label for Lavender Chamomile": {
+                    "current_stock": 500,
+                    "min_stock": 90,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0017",
+                    "status": "In stock"
+                },
+                "Label for Jasmine Green Tea": {
+                    "current_stock": 500,
+                    "min_stock": 90,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0018",
+                    "status": "In stock"
+                },
+                "Label for Chamomile": {
+                    "current_stock": 500,
+                    "min_stock": 60,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0019",
+                    "status": "In stock"
+                },
+                "Label for Peach Passion": {
+                    "current_stock": 500,
+                    "min_stock": 210,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0020",
+                    "status": "In stock"
+                },
+                "Label for Lychee with Rose": {
+                    "current_stock": 500,
+                    "min_stock": 75,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0021",
+                    "status": "In stock"
+                },
+                "Label for Raspberry": {
+                    "current_stock": 500,
+                    "min_stock": 75,
+                    "max_stock": 2500,
+                    "unit_cost": 0.14,
+                    "unit_price": 347.00,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0022",
+                    "status": "In stock"
+                },
+                "Tester cup (50/pack)": {
+                    "current_stock": 4,
                     "min_stock": 12,
                     "max_stock": 50,
-                    "unit_cost": 15.20,
-                    "unit_price": 22.00,
-                    "supplier": "Herbal Essence",
-                    "category": "Tea"
-                },
-                "Vanilla Honey": {
-                    "current_stock": 3,
-                    "min_stock": 15,
-                    "max_stock": 40,
-                    "unit_cost": 9.80,
-                    "unit_price": 14.50,
-                    "supplier": "Sweet Nature",
-                    "category": "Flavoring"
-                },
-                "Chamomile Loose Leaf": {
-                    "current_stock": 22,
-                    "min_stock": 8,
-                    "max_stock": 35,
-                    "unit_cost": 18.00,
-                    "unit_price": 26.00,
-                    "supplier": "Premium Herbs",
-                    "category": "Tea"
+                    "unit_cost": 1.09,
+                    "unit_price": 54.40,
+                    "supplier": "from Taobao",
+                    "category": "Packaging",
+                    "sku": "IN-0023",
+                    "status": "Time to reorder"
                 }
             }
         
         if 'sales_data' not in st.session_state:
             st.session_state.sales_data = [
-                {"date": "2025-06-01", "item": "Chamomile Tea Bags", "quantity": 8, "unit_price": 12.00},
-                {"date": "2025-06-01", "item": "Oat Milk Organic", "quantity": 3, "unit_price": 9.50},
-                {"date": "2025-06-02", "item": "Honey Chamomile Blend", "quantity": 5, "unit_price": 18.00},
-                {"date": "2025-06-02", "item": "Lavender Chamomile", "quantity": 2, "unit_price": 22.00},
-                {"date": "2025-06-03", "item": "Chamomile Loose Leaf", "quantity": 4, "unit_price": 26.00},
+                {"date": "2025-06-01", "item": "BOH Chamomile Tea", "quantity": 5, "unit_price": 12.00},
+                {"date": "2025-06-01", "item": "Oatside Barismilk", "quantity": 2, "unit_price": 9.90},
+                {"date": "2025-06-02", "item": "English Tea Shop Lavender", "quantity": 3, "unit_price": 18.26},
+                {"date": "2025-06-02", "item": "BOH Jasmine Green Tea", "quantity": 4, "unit_price": 11.71},
+                {"date": "2025-06-03", "item": "Celestial Seasonings Country Peach", "quantity": 6, "unit_price": 15.00},
+                {"date": "2025-06-03", "item": "BOH Lychee with Rose Tea", "quantity": 2, "unit_price": 9.43},
             ]
         
         if 'purchase_data' not in st.session_state:
@@ -815,9 +1436,10 @@ def show_add_product():
         col1, col2 = st.columns(2)
         
         with col1:
-            product_name = st.text_input("📝 Product Name *", placeholder="e.g., Mint Chamomile Blend")
-            category = st.selectbox("🏷️ Category", ["Tea", "Milk", "Sweeteners", "Flavoring", "Packaging", "Other"])
-            supplier = st.text_input("🏢 Supplier", placeholder="e.g., Chamomile Gardens")
+            product_name = st.text_input("📝 Product Name *", placeholder="e.g., BOH Earl Grey Tea")
+            category = st.selectbox("🏷️ Category", ["Tea", "Oat Milk", "Sweeteners", "Packaging", "Other"])
+            supplier = st.text_input("🏢 Supplier", placeholder="e.g., from Shopee")
+            sku = st.text_input("🏷️ SKU", placeholder="e.g., IN-0024")
         
         with col2:
             unit_cost = st.number_input("💰 Unit Cost (RM) *", min_value=0.0, step=0.01, format="%.2f")
@@ -850,7 +1472,9 @@ def show_add_product():
                         "unit_cost": unit_cost,
                         "unit_price": unit_price,
                         "supplier": supplier,
-                        "category": category
+                        "category": category,
+                        "sku": sku,
+                        "status": "In stock" if initial_stock > min_stock else "Low stock"
                     }
                     st.success(f"✅ {product_name} added successfully!")
                     st.rerun()
