@@ -64,7 +64,7 @@ let salesHistory = [
 
 // Enhanced inventory structure with batch tracking
 let inventory = {
-    // Event Planning Inventory (for SULAP/JAM events) with batch tracking
+    // M1 - Event Planning Inventory (for SULAP/JAM events) with batch tracking
     event: {
         'P001': { 
             batches: [
@@ -103,7 +103,7 @@ let inventory = {
             brewing: 0 
         }
     },
-    // Distribution Inventory (Sun-Kissed Peach only for daily business) with batch tracking
+    // M2 - Distribution Inventory (Sun-Kissed Peach only for daily business) with batch tracking
     distribution: {
         'P004': { 
             batches: [
@@ -151,7 +151,8 @@ let batchCounter = {
 };
 
 // Business model state for inventory management
-let currentBusinessModel = 'event'; // Default to event planning
+let currentBusinessModel = 'event'; // Default to M1 - Event Planning
+let currentDashboardModel = 'm1'; // Default to M1 - Event Planning
 
 // Sort direction state for data bank
 let sortDirection = {};
@@ -159,8 +160,33 @@ let sortDirection = {};
 // Edit data state
 let editingDataIndex = -1;
 
-// Export all data for use in other modules
+// System state tracking
+let systemState = {
+    isInitialized: false,
+    currentTab: 'dashboard',
+    lastUpdated: null,
+    autoSaveEnabled: true,
+    debugMode: false
+};
+
+// Performance metrics
+let performanceMetrics = {
+    loadTime: 0,
+    lastRefresh: null,
+    updateCount: 0,
+    errorCount: 0
+};
+
+// Notification system state
+let notificationSystem = {
+    queue: [],
+    maxNotifications: 5,
+    defaultDuration: 3000
+};
+
+// Export configuration for module compatibility
 if (typeof window !== 'undefined') {
+    // Browser environment
     window.TeaInventoryData = {
         products,
         salesHistory,
@@ -171,7 +197,147 @@ if (typeof window !== 'undefined') {
         eventPlanning,
         batchCounter,
         currentBusinessModel,
+        currentDashboardModel,
         sortDirection,
-        editingDataIndex
+        editingDataIndex,
+        systemState,
+        performanceMetrics,
+        notificationSystem
     };
+} else if (typeof module !== 'undefined' && module.exports) {
+    // Node.js environment
+    module.exports = {
+        products,
+        salesHistory,
+        inventory,
+        universalSettings,
+        shelfLifeSettings,
+        distributionChannels,
+        eventPlanning,
+        batchCounter,
+        currentBusinessModel,
+        currentDashboardModel,
+        sortDirection,
+        editingDataIndex,
+        systemState,
+        performanceMetrics,
+        notificationSystem
+    };
+}
+
+// Data validation functions
+function validateProductData() {
+    const requiredFields = ['id', 'name', 'description', 'icon'];
+    return products.every(product => 
+        requiredFields.every(field => product.hasOwnProperty(field) && product[field])
+    );
+}
+
+function validateSalesHistoryData() {
+    const requiredFields = ['productId', 'period', 'sales', 'days', 'percentage', 'eventType', 'eventCategory'];
+    return salesHistory.every(sale => 
+        requiredFields.every(field => sale.hasOwnProperty(field) && sale[field] !== null && sale[field] !== undefined)
+    );
+}
+
+function validateInventoryData() {
+    const businessModels = ['event', 'distribution'];
+    return businessModels.every(model => {
+        if (!inventory[model]) return false;
+        return Object.keys(inventory[model]).every(productId => {
+            const item = inventory[model][productId];
+            return item.hasOwnProperty('batches') && 
+                   item.hasOwnProperty('brewing') && 
+                   Array.isArray(item.batches);
+        });
+    });
+}
+
+function validateBatchData() {
+    const businessModels = ['event', 'distribution'];
+    return businessModels.every(model => {
+        return Object.values(inventory[model]).every(item => {
+            return item.batches.every(batch => {
+                const requiredFields = ['id', 'quantity', 'productionDate', 'expirationDate'];
+                return requiredFields.every(field => 
+                    batch.hasOwnProperty(field) && batch[field] !== null && batch[field] !== undefined
+                );
+            });
+        });
+    });
+}
+
+// Data integrity checker
+function checkDataIntegrity() {
+    const checks = {
+        products: validateProductData(),
+        salesHistory: validateSalesHistoryData(),
+        inventory: validateInventoryData(),
+        batches: validateBatchData()
+    };
+    
+    const allValid = Object.values(checks).every(check => check);
+    
+    if (!allValid) {
+        console.warn('Data integrity issues detected:', checks);
+    }
+    
+    return {
+        isValid: allValid,
+        details: checks
+    };
+}
+
+// Data summary generator
+function generateDataSummary() {
+    return {
+        products: {
+            total: products.length,
+            available: products.filter(p => inventory.event[p.id]?.batches?.length > 0).length
+        },
+        salesHistory: {
+            total: salesHistory.length,
+            events: [...new Set(salesHistory.map(sale => sale.period))].length,
+            dateRange: {
+                earliest: salesHistory.reduce((earliest, sale) => {
+                    const saleYear = sale.period.match(/\d{4}/)?.[0];
+                    return !earliest || (saleYear && saleYear < earliest) ? saleYear : earliest;
+                }, null),
+                latest: salesHistory.reduce((latest, sale) => {
+                    const saleYear = sale.period.match(/\d{4}/)?.[0];
+                    return !latest || (saleYear && saleYear > latest) ? saleYear : latest;
+                }, null)
+            }
+        },
+        inventory: {
+            eventBatches: Object.values(inventory.event).reduce((sum, item) => sum + (item.batches?.length || 0), 0),
+            distributionBatches: Object.values(inventory.distribution).reduce((sum, item) => sum + (item.batches?.length || 0), 0),
+            totalStock: Object.values(inventory.event).reduce((sum, item) => 
+                sum + (item.batches?.reduce((batchSum, batch) => batchSum + batch.quantity, 0) || 0), 0
+            ) + Object.values(inventory.distribution).reduce((sum, item) => 
+                sum + (item.batches?.reduce((batchSum, batch) => batchSum + batch.quantity, 0) || 0), 0
+            )
+        },
+        settings: {
+            eventCapacity: universalSettings.eventCapacity,
+            distributionCapacity: universalSettings.distributionCapacity,
+            distributionTarget: universalSettings.distributionTarget,
+            defaultDuration: universalSettings.eventDefaultDuration
+        }
+    };
+}
+
+// Initialize data validation on load
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', () => {
+        const integrity = checkDataIntegrity();
+        if (integrity.isValid) {
+            console.log('✅ Data integrity check passed');
+        } else {
+            console.error('❌ Data integrity check failed:', integrity.details);
+        }
+        
+        // Store data summary for debugging
+        window.TeaInventoryDataSummary = generateDataSummary();
+    });
 }
