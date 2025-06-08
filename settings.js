@@ -14,7 +14,7 @@ function loadSettingsTab() {
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Event Planning Settings -->
                     <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h4 class="font-medium mb-3 text-blue-900">📅 Event Planning Business</h4>
+                        <h4 class="font-medium mb-3 text-blue-900">📅 M1 - Event Planning Business</h4>
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Daily Brewing Capacity</label>
@@ -42,7 +42,7 @@ function loadSettingsTab() {
                     
                     <!-- Distribution Settings -->
                     <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <h4 class="font-medium mb-3 text-green-900">🚚 Distribution Business</h4>
+                        <h4 class="font-medium mb-3 text-green-900">🚚 M2 - Distribution Business</h4>
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Daily Brewing Capacity</label>
@@ -180,12 +180,49 @@ function loadSettingsTab() {
                 </div>
             </div>
 
-            <!-- Google Sheets Integration -->
+            <!-- Google Sheets Integration with Detailed Instructions -->
             <div class="bg-white p-6 rounded-lg border">
                 <h3 class="text-lg font-semibold mb-4 flex items-center">
                     <span class="text-green-600 mr-2">📊</span>
                     Google Sheets Integration
                 </h3>
+                
+                <!-- Step-by-Step Setup Guide -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-medium text-blue-800 mb-3">📖 How to Use Google Sheets Integration</h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-blue-800 mb-2">🚀 Quick Setup (5 minutes)</h5>
+                            <ol class="text-sm text-blue-700 space-y-2">
+                                <li><strong>1.</strong> Go to <a href="https://sheets.google.com" target="_blank" class="underline">sheets.google.com</a></li>
+                                <li><strong>2.</strong> Click "Create" → "Blank spreadsheet"</li>
+                                <li><strong>3.</strong> Name it "Chamomile Tea Inventory System"</li>
+                                <li><strong>4.</strong> Create these tabs at bottom:</li>
+                                <div class="ml-4 text-xs space-y-1">
+                                    <div>• Current Inventory</div>
+                                    <div>• Sales History</div>
+                                    <div>• 30-Day Forecast</div>
+                                    <div>• Distribution Tracking</div>
+                                </div>
+                                <li><strong>5.</strong> Use export buttons below to download CSV files</li>
+                                <li><strong>6.</strong> Import each CSV into corresponding tab</li>
+                            </ol>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-blue-800 mb-2">💡 Pro Tips</h5>
+                            <div class="text-sm text-blue-700 space-y-2">
+                                <div><strong>📊 Data Import:</strong> File → Import → Upload → Replace current sheet</div>
+                                <div><strong>🔄 Regular Updates:</strong> Export weekly to keep Google Sheets current</div>
+                                <div><strong>👥 Team Sharing:</strong> Share button → Anyone with link → Viewer/Editor</div>
+                                <div><strong>📱 Mobile Access:</strong> Download Google Sheets app for mobile editing</div>
+                                <div><strong>🔗 Integration:</strong> Use Google Apps Script for automation</div>
+                                <div><strong>📈 Charts:</strong> Insert → Chart to create visual dashboards</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Export Templates -->
@@ -193,49 +230,59 @@ function loadSettingsTab() {
                         <h4 class="font-medium mb-3 text-green-900">📊 Export Data Templates</h4>
                         <div class="space-y-3">
                             <button onclick="exportToCSV('inventory')" class="w-full p-3 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg text-left transition-colors">
-                                <div class="font-medium text-green-800">Current Inventory Sheet</div>
+                                <div class="font-medium text-green-800">📦 Current Inventory Sheet</div>
                                 <div class="text-sm text-green-600">Batch tracking, stock levels, brewing plans</div>
+                                <div class="text-xs text-green-500 mt-1">→ Import to "Current Inventory" tab</div>
                             </button>
                             
                             <button onclick="exportToCSV('sales_history')" class="w-full p-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg text-left transition-colors">
-                                <div class="font-medium text-blue-800">Sales History Sheet</div>
+                                <div class="font-medium text-blue-800">📈 Sales History Sheet</div>
                                 <div class="text-sm text-blue-600">Complete historical event data</div>
+                                <div class="text-xs text-blue-500 mt-1">→ Import to "Sales History" tab</div>
                             </button>
                             
                             <button onclick="exportToCSV('forecasting_template')" class="w-full p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg text-left transition-colors">
-                                <div class="font-medium text-purple-800">30-Day Forecasting Template</div>
+                                <div class="font-medium text-purple-800">🔮 30-Day Forecasting Template</div>
                                 <div class="text-sm text-purple-600">Planning template with universal settings</div>
+                                <div class="text-xs text-purple-500 mt-1">→ Import to "30-Day Forecast" tab</div>
                             </button>
                             
                             <button onclick="exportToCSV('distribution_tracking')" class="w-full p-3 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg text-left transition-colors">
-                                <div class="font-medium text-orange-800">V-POT Distribution Tracker</div>
+                                <div class="font-medium text-orange-800">🚚 V-POT Distribution Tracker</div>
                                 <div class="text-sm text-orange-600">Daily distribution tracking</div>
+                                <div class="text-xs text-orange-500 mt-1">→ Import to "Distribution Tracking" tab</div>
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Setup Instructions -->
+                    <!-- Advanced Setup -->
                     <div>
-                        <h4 class="font-medium mb-3 text-blue-900">🔧 Setup Instructions</h4>
+                        <h4 class="font-medium mb-3 text-blue-900">🚀 Advanced Features</h4>
                         <div class="space-y-3">
                             <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                <h5 class="font-medium text-blue-800 mb-2">Quick Setup</h5>
-                                <ol class="text-sm text-blue-700 space-y-1">
-                                    <li>1. Go to sheets.google.com and create a new spreadsheet</li>
-                                    <li>2. Name it 'Chamomile Tea Inventory System'</li>
-                                    <li>3. Create tabs: 'Current Inventory', 'Sales History', etc.</li>
-                                    <li>4. Import the CSV files we generate into each tab</li>
-                                </ol>
+                                <h5 class="font-medium text-blue-800 mb-2">🔄 Automatic Updates</h5>
+                                <div class="text-sm text-blue-700 space-y-1">
+                                    <div>• Use Google Apps Script for automation</div>
+                                    <div>• Set up daily/weekly import schedules</div>
+                                    <div>• Create email alerts for low stock</div>
+                                </div>
                             </div>
                             
                             <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <h5 class="font-medium text-green-800 mb-2">Benefits</h5>
+                                <h5 class="font-medium text-green-800 mb-2">📊 Dashboard Creation</h5>
                                 <div class="text-sm text-green-700 space-y-1">
-                                    <div>✅ Automatic backup to Google Drive</div>
-                                    <div>✅ Access from any device</div>
-                                    <div>✅ Share with team members</div>
-                                    <div>✅ Real-time collaboration</div>
-                                    <div>✅ Free for small businesses</div>
+                                    <div>• Insert → Chart for visual graphs</div>
+                                    <div>• Use pivot tables for analysis</div>
+                                    <div>• Create conditional formatting rules</div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                <h5 class="font-medium text-purple-800 mb-2">👥 Team Collaboration</h5>
+                                <div class="text-sm text-purple-700 space-y-1">
+                                    <div>• Share with team members</div>
+                                    <div>• Set edit/view permissions</div>
+                                    <div>• Add comments for communication</div>
                                 </div>
                             </div>
                         </div>
@@ -244,46 +291,127 @@ function loadSettingsTab() {
                 
                 <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <h5 class="font-medium text-yellow-800 mb-2">📱 Recommended Workflow</h5>
-                    <div class="text-sm text-yellow-700 space-y-1">
-                        <div>• Export data from this system weekly</div>
-                        <div>• Import into Google Sheets to maintain history</div>
-                        <div>• Use Google Sheets for daily data entry</div>
-                        <div>• Import back to this system for analysis</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-yellow-700">
+                        <div>
+                            <div class="font-medium mb-1">Daily Routine:</div>
+                            <div>• Morning: Check Google Sheets dashboard</div>
+                            <div>• Use this system for planning & operations</div>
+                            <div>• Evening: Export updated data to Sheets</div>
+                        </div>
+                        <div>
+                            <div class="font-medium mb-1">Weekly Maintenance:</div>
+                            <div>• Full export of all data to Google Sheets</div>
+                            <div>• Review trends and patterns</div>
+                            <div>• Share reports with stakeholders</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- System Backup & Reset -->
+            <!-- System Backup & Reset with Detailed Instructions -->
             <div class="bg-white p-6 rounded-lg border">
                 <h3 class="text-lg font-semibold mb-4 flex items-center">
                     <span class="text-red-600 mr-2">🔧</span>
                     System Backup & Reset
                 </h3>
                 
+                <!-- How to Use Guide -->
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 class="font-medium text-red-800 mb-3">📖 How to Use System Backup & Reset</h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-red-800 mb-2">💾 Backup Process</h5>
+                            <ol class="text-sm text-red-700 space-y-2">
+                                <li><strong>1.</strong> Click "Backup All Data" below</li>
+                                <li><strong>2.</strong> A JSON file will download automatically</li>
+                                <li><strong>3.</strong> Save to Google Drive, Dropbox, or local storage</li>
+                                <li><strong>4.</strong> Name with date: "tea_backup_2024_12_15.json"</li>
+                                <li><strong>5.</strong> Keep multiple versions (weekly/monthly)</li>
+                            </ol>
+                            
+                            <div class="mt-3 p-2 bg-red-100 rounded text-xs text-red-600">
+                                <strong>⚠️ Important:</strong> Backup contains ALL your data including sales history, inventory, and settings.
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-red-800 mb-2">🔄 Reset Options</h5>
+                            <div class="text-sm text-red-700 space-y-2">
+                                <div><strong>Factory Reset:</strong> Returns to original settings but keeps sales history</div>
+                                <div><strong>Clear All Data:</strong> Deletes EVERYTHING - use only for fresh start</div>
+                                <div><strong>Settings Only:</strong> Export just your capacity and shelf life settings</div>
+                            </div>
+                            
+                            <div class="mt-3 p-2 bg-orange-100 rounded text-xs text-orange-600">
+                                <strong>💡 Tip:</strong> Always backup before performing any reset operations.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                         <h4 class="font-medium text-blue-800 mb-3">💾 Backup Options</h4>
                         <div class="space-y-3">
-                            <button onclick="backupAllData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            <button onclick="backupAllData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
                                 📦 Backup All Data
                             </button>
-                            <button onclick="exportSystemSettings()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                            <button onclick="exportSystemSettings()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
                                 ⚙️ Export Settings Only
                             </button>
-                            <p class="text-xs text-blue-700">Creates downloadable backup files for system recovery</p>
+                            <button onclick="importSettings()" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                📥 Import Backup
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3 text-xs text-blue-700">
+                            <div><strong>Backup includes:</strong></div>
+                            <div>• All sales history data</div>
+                            <div>• Current inventory & batches</div>
+                            <div>• Universal settings</div>
+                            <div>• Shelf life configurations</div>
                         </div>
                     </div>
                     
                     <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
                         <h4 class="font-medium text-red-800 mb-3">🔄 Reset Options</h4>
                         <div class="space-y-3">
-                            <button onclick="resetToDefaults()" class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">
+                            <button onclick="resetToDefaults()" class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors">
                                 🏭 Reset to Factory Defaults
                             </button>
-                            <button onclick="clearAllData()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                            <button onclick="clearAllData()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
                                 🗑️ Clear All Data
                             </button>
-                            <p class="text-xs text-red-700">⚠️ These actions cannot be undone. Backup first!</p>
+                        </div>
+                        
+                        <div class="mt-3 text-xs text-red-700">
+                            <div><strong>⚠️ Reset effects:</strong></div>
+                            <div>• Factory Reset: Keeps sales history</div>
+                            <div>• Clear All: Deletes EVERYTHING</div>
+                            <div>• Both actions cannot be undone!</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Backup Schedule Recommendations -->
+                <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h5 class="font-medium text-green-800 mb-2">📅 Recommended Backup Schedule</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-green-700">
+                        <div>
+                            <div class="font-medium">Daily (During Events):</div>
+                            <div>• Export to Google Sheets</div>
+                            <div>• Quick settings backup</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">Weekly (Regular):</div>
+                            <div>• Full data backup</div>
+                            <div>• Store in cloud storage</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">Monthly (Archive):</div>
+                            <div>• Complete system backup</div>
+                            <div>• Local storage + cloud backup</div>
                         </div>
                     </div>
                 </div>
@@ -481,6 +609,10 @@ function backupAllData() {
         const backupData = {
             timestamp: new Date().toISOString(),
             version: "2.0",
+            systemInfo: {
+                userAgent: navigator.userAgent,
+                timestamp: Date.now()
+            },
             products: products,
             salesHistory: salesHistory,
             inventory: inventory,
@@ -500,10 +632,11 @@ function backupAllData() {
         link.click();
         URL.revokeObjectURL(url);
         
-        alert('Backup completed successfully!');
+        showNotification('Complete backup downloaded successfully! Save this file safely.', 'success', 5000);
         
     } catch (error) {
         handleError(error, 'data backup');
+        showNotification('Backup failed. Please try again.', 'error');
     }
 }
 
@@ -513,6 +646,7 @@ function exportSystemSettings() {
         const settingsData = {
             timestamp: new Date().toISOString(),
             version: "2.0",
+            type: "settings_only",
             universalSettings: universalSettings,
             shelfLifeSettings: shelfLifeSettings,
             distributionChannels: distributionChannels
@@ -527,16 +661,115 @@ function exportSystemSettings() {
         link.click();
         URL.revokeObjectURL(url);
         
-        alert('Settings exported successfully!');
+        showNotification('Settings exported successfully!', 'success');
         
     } catch (error) {
         handleError(error, 'settings export');
     }
 }
 
+// Import settings from backup
+function importSettings() {
+    try {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Validate data structure
+                        if (!data.version) {
+                            throw new Error('Invalid backup file format');
+                        }
+                        
+                        const confirmMessage = `Import Backup Data?\n\n` +
+                            `File: ${file.name}\n` +
+                            `Version: ${data.version}\n` +
+                            `Date: ${data.timestamp}\n\n` +
+                            `This will replace current settings and data. Continue?`;
+                        
+                        if (confirm(confirmMessage)) {
+                            // Import based on backup type
+                            if (data.type === "settings_only") {
+                                // Import settings only
+                                if (data.universalSettings) {
+                                    Object.assign(universalSettings, data.universalSettings);
+                                }
+                                if (data.shelfLifeSettings) {
+                                    Object.assign(shelfLifeSettings, data.shelfLifeSettings);
+                                }
+                                if (data.distributionChannels) {
+                                    Object.assign(distributionChannels, data.distributionChannels);
+                                }
+                                showNotification('Settings imported successfully!', 'success');
+                            } else {
+                                // Full backup import
+                                if (data.salesHistory) {
+                                    salesHistory.length = 0;
+                                    salesHistory.push(...data.salesHistory);
+                                }
+                                if (data.inventory) {
+                                    Object.assign(inventory, data.inventory);
+                                }
+                                if (data.universalSettings) {
+                                    Object.assign(universalSettings, data.universalSettings);
+                                }
+                                if (data.shelfLifeSettings) {
+                                    Object.assign(shelfLifeSettings, data.shelfLifeSettings);
+                                }
+                                if (data.distributionChannels) {
+                                    Object.assign(distributionChannels, data.distributionChannels);
+                                }
+                                if (data.eventPlanning) {
+                                    Object.assign(eventPlanning, data.eventPlanning);
+                                }
+                                if (data.batchCounter) {
+                                    Object.assign(batchCounter, data.batchCounter);
+                                }
+                                showNotification('Full backup imported successfully!', 'success');
+                            }
+                            
+                            // Reload settings and sync
+                            loadCurrentSettings();
+                            updateUniversalSettings();
+                            updateShelfLifeSettings();
+                            syncWithOtherComponents();
+                        }
+                        
+                    } catch (error) {
+                        showNotification('Error importing backup: Invalid file format or corrupted data', 'error');
+                        console.error('Import error:', error);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+        
+    } catch (error) {
+        handleError(error, 'settings import');
+    }
+}
+
 // Reset to factory defaults
 function resetToDefaults() {
-    if (confirm('Are you sure you want to reset all settings to factory defaults? This action cannot be undone.')) {
+    const confirmMessage = `🏭 Reset to Factory Defaults?\n\n` +
+        `This will reset:\n` +
+        `• Universal settings (capacities, targets)\n` +
+        `• Shelf life settings\n` +
+        `• Distribution channel allocation\n` +
+        `• Event planning preferences\n\n` +
+        `This will NOT delete:\n` +
+        `• Sales history data\n` +
+        `• Current inventory batches\n\n` +
+        `Continue with factory reset?`;
+    
+    if (confirm(confirmMessage)) {
         try {
             // Reset universal settings
             universalSettings.eventCapacity = 110;
@@ -566,7 +799,7 @@ function resetToDefaults() {
             updateShelfLifeSettings();
             syncWithOtherComponents();
             
-            alert('Settings reset to factory defaults successfully!');
+            showNotification('Settings reset to factory defaults successfully! Sales history and inventory preserved.', 'success', 5000);
             
         } catch (error) {
             handleError(error, 'factory reset');
@@ -576,8 +809,24 @@ function resetToDefaults() {
 
 // Clear all data
 function clearAllData() {
-    if (confirm('⚠️ WARNING: This will delete ALL data including inventory, sales history, and batches. This action cannot be undone. Are you absolutely sure?')) {
-        if (confirm('Last chance! This will permanently delete everything. Continue?')) {
+    const confirmMessage = `🗑️ CLEAR ALL DATA?\n\n` +
+        `⚠️ WARNING: This will permanently delete:\n` +
+        `• ALL sales history data\n` +
+        `• ALL inventory and batches\n` +
+        `• ALL settings and configurations\n` +
+        `• Everything will be reset to empty state\n\n` +
+        `This action CANNOT be undone!\n\n` +
+        `Are you absolutely sure?`;
+    
+    if (confirm(confirmMessage)) {
+        const finalConfirm = `🚨 FINAL WARNING!\n\n` +
+            `You are about to delete EVERYTHING.\n` +
+            `This will permanently erase all your data.\n\n` +
+            `Type "DELETE ALL" to confirm:`;
+        
+        const userInput = prompt(finalConfirm);
+        
+        if (userInput === "DELETE ALL") {
             try {
                 // Clear sales history
                 salesHistory.length = 0;
@@ -601,18 +850,42 @@ function clearAllData() {
                 batchCounter.event = { P001: 1, P002: 1, P003: 1, P004: 1, P005: 1, P006: 1 };
                 batchCounter.distribution = { P004: 1 };
                 
-                // Reset sort direction
+                // Reset all settings to defaults
+                universalSettings.eventCapacity = 110;
+                universalSettings.distributionCapacity = 100;
+                universalSettings.distributionTarget = 100;
+                universalSettings.eventDefaultDuration = 3;
+                
+                shelfLifeSettings.defaultShelfLife = 7;
+                shelfLifeSettings.warningDays = 2;
+                shelfLifeSettings.autoExpireCheck = true;
+                shelfLifeSettings.batchTracking = true;
+                
+                distributionChannels.localBusiness = 60;
+                distributionChannels.directSales = 40;
+                
+                eventPlanning.eventType = 'sulap';
+                eventPlanning.eventDays = 3;
+                eventPlanning.dailyEventCapacity = 110;
+                eventPlanning.selectedProducts = ['P004', 'P001', 'P005'];
+                
+                // Reset sort direction and editing state
                 sortDirection = {};
                 editingDataIndex = -1;
                 
-                // Sync with all components
+                // Reload everything
+                loadCurrentSettings();
+                updateUniversalSettings();
+                updateShelfLifeSettings();
                 syncWithOtherComponents();
                 
-                alert('All data cleared successfully. The system has been reset to empty state.');
+                showNotification('ALL DATA CLEARED. System reset to empty state. You can start fresh!', 'success', 7000);
                 
             } catch (error) {
                 handleError(error, 'data clearing');
             }
+        } else {
+            showNotification('Data clearing cancelled - incorrect confirmation text', 'warning');
         }
     }
 }
@@ -631,53 +904,6 @@ function updateSystemStats() {
         
     } catch (error) {
         console.error('Error updating system stats:', error);
-    }
-}
-
-// Import settings from backup
-function importSettings() {
-    try {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        
-                        // Validate data structure
-                        if (data.universalSettings) {
-                            Object.assign(universalSettings, data.universalSettings);
-                        }
-                        if (data.shelfLifeSettings) {
-                            Object.assign(shelfLifeSettings, data.shelfLifeSettings);
-                        }
-                        if (data.distributionChannels) {
-                            Object.assign(distributionChannels, data.distributionChannels);
-                        }
-                        
-                        // Reload settings
-                        loadCurrentSettings();
-                        updateUniversalSettings();
-                        updateShelfLifeSettings();
-                        syncWithOtherComponents();
-                        
-                        alert('Settings imported successfully!');
-                        
-                    } catch (error) {
-                        alert('Error importing settings: Invalid file format');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        };
-        input.click();
-        
-    } catch (error) {
-        handleError(error, 'settings import');
     }
 }
 
@@ -759,4 +985,12 @@ function initializeAutoSave() {
     
     // Stop auto-save when page is unloaded
     window.addEventListener('beforeunload', stopAutoSave);
+}
+
+// Helper function to safely update form values
+function safeUpdateValue(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.value = value;
+    }
 }

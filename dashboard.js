@@ -35,6 +35,224 @@ function updateDashboard() {
 }
 
 // =============================================================================
+// DASHBOARD MODEL SELECTION (NEW)
+// =============================================================================
+
+// Load dashboard content with business model selection
+function loadDashboardContent() {
+    const dashboardContent = `
+        <div class="space-y-6">
+            <!-- Business Model Selection -->
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">📊 Dashboard - Business Model Selection</h2>
+                <div class="flex space-x-2">
+                    <button onclick="selectDashboardModel('m1')" id="btn-dashboard-m1" 
+                            class="px-6 py-3 rounded-lg font-medium transition-colors business-model-active">
+                        📅 M1 - Event Planning Dashboard
+                    </button>
+                    <button onclick="selectDashboardModel('m2')" id="btn-dashboard-m2" 
+                            class="px-6 py-3 rounded-lg font-medium transition-colors business-model-inactive">
+                        🚚 M2 - Distribution Dashboard
+                    </button>
+                </div>
+                <div class="mt-3 text-sm text-gray-600">
+                    <span id="dashboard-model-description">Viewing M1 - Event Planning business dashboard with all 6 tea products for SULAP/JAM events.</span>
+                </div>
+            </div>
+
+            <!-- Business Model Overview -->
+            <div class="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="text-lg font-semibold mb-2 text-blue-900">🏢 Business Model Overview</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="bg-white p-3 rounded border-l-4 border-blue-500">
+                        <h4 class="font-medium text-blue-800">📅 M1 - Event Planning Business</h4>
+                        <p class="text-blue-700">SULAP & JAM events • 2-4 days • Adjustable capacity • All 6 products</p>
+                    </div>
+                    <div class="bg-white p-3 rounded border-l-4 border-green-500">
+                        <h4 class="font-medium text-green-800">🚚 M2 - Distribution Business</h4>
+                        <p class="text-green-700">Daily operations • Sun-Kissed Peach only • Adjustable capacity • Local businesses</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M1 - Event Planning Dashboard Section -->
+            <div id="m1-dashboard-section" class="dashboard-model-section">
+                <div class="bg-white p-6 rounded-lg border">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <span class="text-blue-600 mr-2">📅</span>
+                        M1 - Event Planning Business Dashboard
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-blue-600 text-sm font-medium">Event Capacity</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="event-capacity-display">110</p>
+                                </div>
+                                <span class="text-blue-600 text-2xl">📦</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-purple-600 text-sm font-medium">Products Available</p>
+                                    <p class="text-2xl font-bold text-purple-900">6</p>
+                                </div>
+                                <span class="text-purple-600 text-2xl">🧋</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-orange-600 text-sm font-medium">Event Alerts</p>
+                                    <p class="text-2xl font-bold text-orange-900" id="event-low-stock-count">0</p>
+                                </div>
+                                <span class="text-orange-600 text-2xl">⚠️</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-indigo-600 text-sm font-medium">Top Performer</p>
+                                    <p class="text-lg font-bold text-indigo-900">Sun-Kissed Peach</p>
+                                </div>
+                                <span class="text-indigo-600 text-2xl">🏆</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Event Planning Detailed Table -->
+                    <div class="mb-4">
+                        <h4 class="font-medium mb-2 text-blue-800">📊 M1 - Event Planning Stock Overview</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border border-gray-300">
+                                <thead>
+                                    <tr class="bg-blue-50">
+                                        <th class="border border-gray-300 px-3 py-2 text-left">Product</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Current Stock</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Current Brewing</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Available Tomorrow</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Batch Expiration</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="event-stock-table">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Event Planning Alerts -->
+                    <div id="event-alerts" class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                        <h3 class="text-red-800 font-semibold mb-2 flex items-center">
+                            <span class="mr-2">📅</span>
+                            M1 - Event Planning - Stock & Batch Alerts
+                        </h3>
+                        <div id="event-alert-items" class="space-y-2">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M2 - Distribution Dashboard Section -->
+            <div id="m2-dashboard-section" class="dashboard-model-section hidden">
+                <div class="bg-white p-6 rounded-lg border">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <span class="text-green-600 mr-2">🚚</span>
+                        M2 - Distribution Business Dashboard
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-green-600 text-sm font-medium">Daily Target</p>
+                                    <p class="text-2xl font-bold text-green-900" id="dist-target-display">100</p>
+                                </div>
+                                <span class="text-green-600 text-2xl">🎯</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-blue-600 text-sm font-medium">Daily Capacity</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="dist-capacity-display">100</p>
+                                </div>
+                                <span class="text-blue-600 text-2xl">⚗️</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-orange-600 text-sm font-medium">Current Brewing</p>
+                                    <p class="text-2xl font-bold text-orange-900" id="distribution-brewing-count">0</p>
+                                </div>
+                                <span class="text-orange-600 text-2xl">📋</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-purple-600 text-sm font-medium">Available Tomorrow</p>
+                                    <p class="text-2xl font-bold text-purple-900" id="dist-available-tomorrow">42</p>
+                                </div>
+                                <span class="text-purple-600 text-2xl" id="dist-status-icon">📦</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Distribution Detailed Table -->
+                    <div class="mb-4">
+                        <h4 class="font-medium mb-2 text-green-800">📊 M2 - Distribution Stock Overview (Sun-Kissed Peach Only)</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border-collapse border border-gray-300">
+                                <thead>
+                                    <tr class="bg-green-50">
+                                        <th class="border border-gray-300 px-3 py-2 text-left">Product</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Current Stock</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Current Brewing</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Available Tomorrow</th>
+                                        <th class="border border-gray-300 px-3 py-2 text-center">Batch Expiration</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="distribution-stock-table">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Distribution Alerts -->
+                    <div id="distribution-alerts" class="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                        <h3 class="text-orange-800 font-semibold mb-2 flex items-center">
+                            <span class="mr-2">🚚</span>
+                            M2 - Distribution - Stock & Batch Alerts
+                        </h3>
+                        <div id="distribution-alert-items" class="space-y-2">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    safeUpdateHTML('dashboard-content', dashboardContent);
+    
+    // Initialize dashboard with default model
+    setTimeout(() => {
+        selectDashboardModel(currentDashboardModel);
+        updateDashboard();
+    }, 100);
+}
+
+// =============================================================================
 // M1 - EVENT PLANNING DASHBOARD FUNCTIONS
 // =============================================================================
 
@@ -534,8 +752,8 @@ function initializeDashboard() {
             currentDateElement.textContent = currentDate.display;
         }
         
-        // Initial dashboard update
-        updateDashboard();
+        // Load dashboard content
+        loadDashboardContent();
         
         // Set up periodic updates (every 30 seconds)
         if (typeof systemState !== 'undefined' && systemState.autoSaveEnabled) {
@@ -772,6 +990,8 @@ if (typeof document !== 'undefined') {
 if (typeof window !== 'undefined') {
     window.DashboardFunctions = {
         updateDashboard,
+        loadDashboardContent,
+        selectDashboardModel,
         updateEventPlanningMetrics,
         updateDistributionMetrics,
         updateEventStockTable,
