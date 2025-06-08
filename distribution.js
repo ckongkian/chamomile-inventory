@@ -1,4 +1,4 @@
-// Distribution management functionality
+// M2 - Distribution management functionality
 
 // Load distribution tab content
 function loadDistributionTab() {
@@ -8,21 +8,50 @@ function loadDistributionTab() {
                 <div class="flex justify-between items-start mb-4">
                     <h3 class="text-lg font-semibold flex items-center">
                         <span class="text-green-600 mr-2">📍</span>
-                        Product Distribution - Sun-Kissed Peach Only
+                        M2 - Distribution - Sun-Kissed Peach Only
                     </h3>
                 </div>
                 
                 <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p class="text-sm text-yellow-800">
-                        <strong>📋 Business Model:</strong> Distribution business focuses exclusively on Sun-Kissed Peach (V-POT) 
-                        with daily brewing capacity managed in universal settings, separate from event planning operations.
+                        <strong>📋 M2 - Distribution Business:</strong> Daily distribution business focuses exclusively on Sun-Kissed Peach (V-POT) 
+                        with daily brewing capacity managed in universal settings, separate from M1 - Event Planning operations.
                     </p>
+                </div>
+                
+                <!-- How to Use Guide -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-medium text-blue-800 mb-3">📖 How to Use M2 - Distribution Management</h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-blue-800 mb-2">🚀 Daily Workflow</h5>
+                            <ol class="text-sm text-blue-700 space-y-2">
+                                <li><strong>1. Morning Check:</strong> Review current stock levels</li>
+                                <li><strong>2. Plan Production:</strong> Use +5/-5 buttons for brewing</li>
+                                <li><strong>3. Monitor Channels:</strong> Check Local Business vs Direct Sales split</li>
+                                <li><strong>4. Track Progress:</strong> Monitor target achievement</li>
+                                <li><strong>5. Record Sales:</strong> Use "Record Today's Sales" button</li>
+                                <li><strong>6. Plan Tomorrow:</strong> Use "Plan Tomorrow" for next day</li>
+                            </ol>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium text-blue-800 mb-2">⚡ Quick Actions Guide</h5>
+                            <div class="text-sm text-blue-700 space-y-2">
+                                <div><strong>📊 Record Today's Sales:</strong> Enter actual bottles sold to local businesses and direct customers</div>
+                                <div><strong>📅 Plan Tomorrow:</strong> System calculates optimal production for next day based on current stock</div>
+                                <div><strong>📋 Export Report:</strong> Download complete distribution report with batch details</div>
+                                <div><strong>🔄 Refresh Data:</strong> Update all displays with latest information</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div class="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
-                            <h4 class="font-semibold text-green-900 mb-2">🍑 Distribution Product</h4>
+                            <h4 class="font-semibold text-green-900 mb-2">🍑 M2 - Distribution Product</h4>
                             <div class="flex items-center space-x-3">
                                 <div class="w-16 h-16 bg-orange-200 rounded-lg flex items-center justify-center">
                                     <span class="text-2xl">🍑</span>
@@ -30,7 +59,7 @@ function loadDistributionTab() {
                                 <div>
                                     <h5 class="font-medium">Sun-Kissed Peach (V-POT)</h5>
                                     <p class="text-sm text-gray-600">Peach & Orange Peel & Rosehips</p>
-                                    <p class="text-sm text-green-700 font-medium">Distribution Business Focus</p>
+                                    <p class="text-sm text-green-700 font-medium">M2 - Distribution Business Focus</p>
                                 </div>
                             </div>
                         </div>
@@ -182,20 +211,44 @@ function loadDistributionTab() {
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Quick Actions with Detailed Instructions -->
                 <div class="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <h5 class="font-medium text-gray-800 mb-3">⚡ Quick Distribution Actions</h5>
+                    <h5 class="font-medium text-gray-800 mb-3">⚡ Quick M2 - Distribution Actions</h5>
+                    
+                    <!-- Detailed Action Instructions -->
+                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h6 class="font-medium text-blue-800 mb-2">📚 How to Use Each Action</h6>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm text-blue-700">
+                            <div>
+                                <div class="font-medium">📊 Record Today's Sales:</div>
+                                <div>Enter actual bottles sold to local businesses and direct customers. System will deduct from current stock using FIFO.</div>
+                            </div>
+                            <div>
+                                <div class="font-medium">📅 Plan Tomorrow:</div>
+                                <div>Calculates optimal production based on current stock, daily target, and capacity limits.</div>
+                            </div>
+                            <div>
+                                <div class="font-medium">📋 Export Report:</div>
+                                <div>Downloads comprehensive distribution report with batch details, channel performance, and analytics.</div>
+                            </div>
+                            <div>
+                                <div class="font-medium">🔄 Refresh Data:</div>
+                                <div>Updates all displays with latest information and recalculates all metrics.</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <button onclick="recordDailyDistribution()" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded text-sm">
+                        <button onclick="recordDailyDistribution()" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded text-sm transition-colors">
                             📊 Record Today's Sales
                         </button>
-                        <button onclick="planTomorrowProduction()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded text-sm">
+                        <button onclick="planTomorrowProduction()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded text-sm transition-colors">
                             📅 Plan Tomorrow
                         </button>
-                        <button onclick="exportDistributionReport()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded text-sm">
+                        <button onclick="exportDistributionReport()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded text-sm transition-colors">
                             📋 Export Report
                         </button>
-                        <button onclick="refreshDistributionData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm">
+                        <button onclick="refreshDistributionData()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm transition-colors">
                             🔄 Refresh Data
                         </button>
                     </div>
@@ -450,9 +503,9 @@ function exportDistributionReport() {
         const vpotBrewing = inventory.distribution['P004']?.brewing || 0;
         const available = vpotStock + vpotBrewing;
         
-        let csvContent = 'Distribution Business Report\n';
+        let csvContent = 'M2 - Distribution Business Report\n';
         csvContent += `Report Date,${today}\n`;
-        csvContent += `Business Model,Distribution (Sun-Kissed Peach Only)\n\n`;
+        csvContent += `Business Model,M2 - Distribution (Sun-Kissed Peach Only)\n\n`;
         
         csvContent += 'Current Status\n';
         csvContent += `Current Stock,${vpotStock} bottles\n`;
@@ -482,7 +535,7 @@ function exportDistributionReport() {
             });
         }
         
-        downloadCSV(csvContent, `distribution_report_${today}.csv`);
+        downloadCSV(csvContent, `m2_distribution_report_${today}.csv`);
         
     } catch (error) {
         handleError(error, 'distribution report export');
@@ -497,7 +550,7 @@ function refreshDistributionData() {
         
         // Show refresh confirmation
         const message = document.createElement('div');
-        message.textContent = 'Distribution data refreshed!';
+        message.textContent = 'M2 - Distribution data refreshed!';
         message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
         document.body.appendChild(message);
         
@@ -526,6 +579,31 @@ function syncDistributionSettings() {
     }
 }
 
+// Distribution brewing functions (separate from events) - Updated for ±5 precision
+function updateDistributionBrewing(change) {
+    try {
+        const current = inventory.distribution['P004']?.brewing || 0;
+        const newValue = Math.max(0, Math.min(universalSettings.distributionCapacity, current + change));
+        inventory.distribution['P004'].brewing = newValue;
+        
+        updateDistribution();
+        
+        if (typeof updateDashboard === 'function') {
+            updateDashboard();
+        }
+        
+        showNotification(`M2 - Distribution brewing ${change > 0 ? 'increased' : 'decreased'} by ${Math.abs(change)} bottles`, 'info', 1500);
+        
+        debugLog('Distribution brewing updated', {
+            change: change,
+            newValue: newValue
+        });
+        
+    } catch (error) {
+        handleError(error, 'distribution brewing update');
+    }
+}
+
 // Auto-planning feature for distribution
 function autoplanDistribution() {
     try {
@@ -548,7 +626,7 @@ function autoplanDistribution() {
             projectedStock = projectedStock + neededProduction - target;
         }
         
-        let planText = '📊 3-Day Auto Distribution Plan:\n\n';
+        let planText = '📊 3-Day Auto M2 - Distribution Plan:\n\n';
         threeDayPlan.forEach(plan => {
             planText += `Day ${plan.day}:\n`;
             planText += `  Starting Stock: ${plan.startingStock} bottles\n`;

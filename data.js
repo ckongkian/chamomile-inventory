@@ -68,37 +68,37 @@ let inventory = {
     event: {
         'P001': { 
             batches: [
-                { id: 'E001_001', quantity: 21, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
+                { id: 'E001_001', quantity: 1, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
             ],
             brewing: 0 
         },
         'P002': { 
             batches: [
-                { id: 'E002_001', quantity: 10, productionDate: '2025-06-04', expirationDate: '2025-06-11' }
+                { id: 'E002_001', quantity: 2, productionDate: '2025-06-04', expirationDate: '2025-06-11' }
             ],
             brewing: 0 
         },
         'P003': { 
             batches: [
-                { id: 'E003_001', quantity: 21, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
+                { id: 'E003_001', quantity: 3, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
             ],
             brewing: 0 
         },
         'P004': { 
             batches: [
-                { id: 'E004_001', quantity: 25, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
+                { id: 'E004_001', quantity: 4, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
             ],
             brewing: 0 
         },
         'P005': { 
             batches: [
-                { id: 'E005_001', quantity: 21, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
+                { id: 'E005_001', quantity: 5, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
             ],
             brewing: 0 
         },
         'P006': { 
             batches: [
-                { id: 'E006_001', quantity: 32, productionDate: '2025-06-03', expirationDate: '2025-06-10' }
+                { id: 'E006_001', quantity: 6, productionDate: '2025-06-03', expirationDate: '2025-06-10' }
             ],
             brewing: 0 
         }
@@ -107,7 +107,7 @@ let inventory = {
     distribution: {
         'P004': { 
             batches: [
-                { id: 'D004_001', quantity: 42, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
+                { id: 'D004_001', quantity: 3, productionDate: '2025-06-05', expirationDate: '2025-06-12' }
             ],
             brewing: 0 
         }
@@ -116,7 +116,7 @@ let inventory = {
 
 // Universal settings
 let universalSettings = {
-    eventCapacity: 110,
+    eventCapacity: 100,
     distributionCapacity: 100,
     distributionTarget: 100,
     eventDefaultDuration: 3
@@ -132,15 +132,15 @@ let shelfLifeSettings = {
 
 // Distribution channels
 let distributionChannels = {
-    localBusiness: 60, // % allocation
-    directSales: 40    // % allocation
+    localBusiness: 100, // % allocation
+    directSales: 0    // % allocation
 };
 
 // Event planning state
 let eventPlanning = {
     eventType: 'sulap',
     eventDays: 3,
-    dailyEventCapacity: 110,
+    dailyEventCapacity: 100,
     selectedProducts: [] // Will be populated based on historical data
 };
 
