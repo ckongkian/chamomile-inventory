@@ -24,8 +24,8 @@ function loadInventoryTab() {
                 </div>
             </div>
 
-            <!-- Historical Performance Reference -->
-            <div id="historical-performance-reference" class="bg-white p-6 rounded-lg border">
+            <!-- Historical Performance Reference - ONLY for M1 Event Planning -->
+            <div id="historical-performance-reference" class="bg-white p-6 rounded-lg border" style="display: block;">
                 <h3 class="text-lg font-semibold mb-4 flex items-center">
                     <span class="text-purple-600 mr-2">📊</span>
                     Historical Performance Reference (Linked to M1 - Event Planning Page)
@@ -34,7 +34,8 @@ function loadInventoryTab() {
                 <div class="p-4 bg-purple-50 border border-purple-200 rounded-lg mb-4">
                     <p class="text-sm text-purple-800">
                         <strong>📋 Reference Source:</strong> This reference uses the same selections from M1 - Event Planning page for consistent inventory planning.
-                        The quantities below are recommended based on your historical sales data and current universal settings.
+                        The quantities below are recommended based on your selected reference event data and current universal settings.
+                        <strong>Note:</strong> This section only appears for M1 - Event Planning business model.
                     </p>
                 </div>
                 
@@ -78,6 +79,13 @@ function loadInventoryTab() {
                         <span class="text-green-600 mr-2">🚚</span>
                         M2 - Distribution Inventory (Sun-Kissed Peach Only)
                     </h3>
+                    
+                    <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <p class="text-sm text-green-800">
+                            <strong>📋 M2 - Distribution Focus:</strong> This business model focuses exclusively on Sun-Kissed Peach (V-POT) 
+                            for daily distribution operations. Historical performance reference is not applicable for distribution business.
+                        </p>
+                    </div>
                     
                     <div id="distribution-inventory-detail" class="border rounded-lg p-4">
                         <!-- Will be populated by JavaScript -->
@@ -244,6 +252,29 @@ function selectBusinessModel(model) {
             'Managing daily distribution inventory for M2 - Distribution (Sun-Kissed Peach only).';
         safeUpdateText('business-model-description', description);
         
+        // CRITICAL: Control Historical Performance Reference visibility
+        const historicalSection = document.getElementById('historical-performance-reference');
+        if (historicalSection) {
+            if (model === 'event') {
+                // Show for M1 - Event Planning
+                historicalSection.style.display = 'block';
+                historicalSection.style.opacity = '1';
+                historicalSection.style.transition = 'opacity 0.3s ease-in-out';
+                
+                // Update the reference content for event planning
+                setTimeout(() => {
+                    updateHistoricalPerformanceReference();
+                }, 100);
+            } else {
+                // Hide for M2 - Distribution
+                historicalSection.style.opacity = '0';
+                historicalSection.style.transition = 'opacity 0.3s ease-in-out';
+                setTimeout(() => {
+                    historicalSection.style.display = 'none';
+                }, 300);
+            }
+        }
+        
         // Show/hide sections
         const eventSection = document.getElementById('event-inventory-section');
         const distSection = document.getElementById('distribution-inventory-section');
@@ -259,7 +290,15 @@ function selectBusinessModel(model) {
         // Refresh inventory display
         updateInventoryDisplay();
         
-        debugLog('Business model selected', { model: model });
+        // Log the business model change
+        if (typeof logActivity === 'function') {
+            logActivity('Inventory', `Business model switched to ${model === 'event' ? 'M1 - Event Planning' : 'M2 - Distribution'}`);
+        }
+        
+        debugLog('Business model selected with visibility control', { 
+            model: model, 
+            historicalReferenceVisible: model === 'event' 
+        });
         
     } catch (error) {
         handleError(error, 'business model selection');
@@ -273,16 +312,43 @@ function selectBusinessModel(model) {
 // Update Historical Performance Reference (New Function)
 function updateHistoricalPerformanceReference() {
     try {
-        // Get current event planning selections (this links to the Event Planning page)
+        // CRITICAL: Only update and show for M1 - Event Planning Business
+        const historicalSection = document.getElementById('historical-performance-reference');
+        
+        if (currentBusinessModel !== 'event') {
+            // Ensure it's hidden for M2 - Distribution
+            if (historicalSection) {
+                historicalSection.style.display = 'none';
+            }
+            console.log('Historical Performance Reference hidden for M2 - Distribution business');
+            return;
+        }
+        
+        // Show and update for M1 - Event Planning
+        if (historicalSection) {
+            historicalSection.style.display = 'block';
+        }
+        
+        // Get current event planning selections (linked to Event Planning page)
         const eventType = eventPlanning.eventType || 'sulap';
         const eventCategory = eventPlanning.eventCategory || 'festival';
         const eventDays = universalSettings.eventDefaultDuration;
         const dailyCapacity = universalSettings.eventCapacity;
         
+        // Find the reference event for detailed display
+        const referenceEventData = salesHistory.filter(sale => 
+            sale.eventType === eventType && 
+            sale.eventCategory === eventCategory
+        );
+        
+        // Get unique periods for this event type and category
+        const referencePeriods = [...new Set(referenceEventData.map(sale => sale.period))];
+        const referencePeriod = referencePeriods.length > 0 ? referencePeriods[0] : 'No reference event found';
+        
         const referenceHtml = `
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div class="p-3 bg-blue-50 rounded-lg">
-                    <h5 class="font-medium text-blue-800">Event Configuration</h5>
+                <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <h5 class="font-medium text-blue-800">Current Reference Event</h5>
                     <div class="text-sm text-blue-700 space-y-1">
                         <div>Type: ${eventType.toUpperCase()}</div>
                         <div>Category: ${eventCategory}</div>
@@ -291,18 +357,27 @@ function updateHistoricalPerformanceReference() {
                     </div>
                 </div>
                 
-                <div class="p-3 bg-green-50 rounded-lg">
+                <div class="p-3 bg-green-50 rounded-lg border border-green-200">
                     <h5 class="font-medium text-green-800">Total Event Capacity</h5>
                     <div class="text-lg font-bold text-green-900">${dailyCapacity * eventDays} bottles</div>
                     <div class="text-sm text-green-700">For ${eventDays}-day event</div>
                 </div>
                 
-                <div class="p-3 bg-purple-50 rounded-lg">
-                    <h5 class="font-medium text-purple-800">Data Source</h5>
+                <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <h5 class="font-medium text-purple-800">Reference Source</h5>
                     <div class="text-sm text-purple-700">
-                        <div>Historical events: ${salesHistory.length} records</div>
-                        <div>Linked to M1 - Event Planning</div>
+                        <div>Event: ${referencePeriod}</div>
+                        <div>✅ M1 - Event Planning Only</div>
                     </div>
+                </div>
+            </div>
+            
+            <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h6 class="font-medium text-yellow-800 mb-2">📋 Reference Event Methodology</h6>
+                <div class="text-sm text-yellow-700">
+                    <strong>Purpose:</strong> Quantities below use the exact percentage from reference event "${referencePeriod}" 
+                    for precise planning. This section appears only for M1 - Event Planning business model.
+                    <strong>Formula:</strong> Daily Capacity × Event Days × Reference Event Percentage = Recommended Quantity
                 </div>
             </div>
             
@@ -311,7 +386,7 @@ function updateHistoricalPerformanceReference() {
                     <thead>
                         <tr class="bg-purple-50">
                             <th class="border border-gray-300 px-3 py-2 text-left">Product</th>
-                            <th class="border border-gray-300 px-3 py-2 text-center">Historical %</th>
+                            <th class="border border-gray-300 px-3 py-2 text-center">Reference Event %</th>
                             <th class="border border-gray-300 px-3 py-2 text-center">Recommended Qty</th>
                             <th class="border border-gray-300 px-3 py-2 text-center">Calculation Breakdown</th>
                         </tr>
@@ -319,15 +394,15 @@ function updateHistoricalPerformanceReference() {
                     <tbody>
                         ${products.map(product => {
                             const recommended = calculateEventRecommendedQuantity(product.id, eventType, eventCategory, eventDays);
-                            const matchingEvents = salesHistory.filter(sale => 
+                            const referenceEvents = salesHistory.filter(sale => 
                                 sale.productId === product.id && 
                                 sale.eventType === eventType && 
                                 sale.eventCategory === eventCategory
                             );
-                            const avgPercentage = matchingEvents.length > 0 ? 
-                                (matchingEvents.reduce((sum, sale) => sum + sale.percentage, 0) / matchingEvents.length) : 15;
+                            const referencePercentage = referenceEvents.length > 0 ? 
+                                referenceEvents[0].percentage : 15; // Default if no reference
                             
-                            const calculationBreakdown = `${dailyCapacity} × ${eventDays} days × ${avgPercentage.toFixed(1)}% = ${recommended}`;
+                            const calculationBreakdown = `${dailyCapacity} × ${eventDays} days × ${referencePercentage.toFixed(1)}% = ${recommended}`;
                             
                             return `
                                 <tr>
@@ -337,10 +412,11 @@ function updateHistoricalPerformanceReference() {
                                             <span class="font-medium">${product.name}</span>
                                         </div>
                                     </td>
-                                    <td class="border border-gray-300 px-3 py-2 text-center font-semibold">${avgPercentage.toFixed(1)}%</td>
+                                    <td class="border border-gray-300 px-3 py-2 text-center font-semibold ${referenceEvents.length > 0 ? 'text-blue-600' : 'text-gray-500'}">${referencePercentage.toFixed(1)}%</td>
                                     <td class="border border-gray-300 px-3 py-2 text-center font-semibold text-blue-600">${recommended} bottles</td>
                                     <td class="border border-gray-300 px-3 py-2 text-center">
                                         <div class="calculation-breakdown">${calculationBreakdown}</div>
+                                        ${referenceEvents.length === 0 ? '<div class="text-xs text-gray-500">(Default - no reference event)</div>' : ''}
                                     </td>
                                 </tr>
                             `;
@@ -352,11 +428,13 @@ function updateHistoricalPerformanceReference() {
         
         safeUpdateHTML('historical-reference-content', referenceHtml);
         
-        debugLog('Historical performance reference updated', {
+        debugLog('Historical performance reference updated for M1 - Event Planning', {
             eventType: eventType,
             eventCategory: eventCategory,
             eventDays: eventDays,
-            dailyCapacity: dailyCapacity
+            dailyCapacity: dailyCapacity,
+            referencePeriod: referencePeriod,
+            visible: true
         });
         
     } catch (error) {

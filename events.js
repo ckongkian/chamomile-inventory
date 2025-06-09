@@ -1,5 +1,5 @@
 // =============================================================================
-// EVENT PLANNING AND RECOMMENDATIONS
+// OPTIMIZED EVENT PLANNING AND RECOMMENDATIONS (events.js)
 // =============================================================================
 
 // Load events tab content
@@ -49,8 +49,8 @@ function loadEventsTab() {
                 </div>
 
                 <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 class="font-medium text-blue-800 mb-2">📊 Historical Performance Reference</h4>
-                    <div id="historical-reference" class="text-sm text-blue-700">
+                    <h4 class="font-medium text-blue-800 mb-2">📊 Reference Event Performance</h4>
+                    <div id="reference-event-info" class="text-sm text-blue-700">
                         <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
@@ -119,6 +119,125 @@ function loadEventsTab() {
 }
 
 // =============================================================================
+// REFERENCE EVENT CALCULATION FUNCTIONS (OPTIMIZED)
+// =============================================================================
+
+// Calculate event recommended quantity using REFERENCE EVENT percentages (not historical average)
+function calculateEventRecommendedQuantity(productId, eventType, eventCategory, days = 3) {
+    try {
+        // Use current event planning selections as reference
+        const referenceEventType = eventPlanning.eventType || eventType;
+        const referenceEventCategory = eventPlanning.eventCategory || eventCategory;
+        
+        // Find the EXACT reference event match first
+        const exactReferenceEvents = salesHistory.filter(sale => 
+            sale.productId === productId && 
+            sale.eventType === referenceEventType && 
+            sale.eventCategory === referenceEventCategory
+        );
+        
+        if (exactReferenceEvents.length > 0) {
+            // Use the percentage from the reference event (take the first/most recent match)
+            const referenceEvent = exactReferenceEvents[0];
+            const referencePercentage = referenceEvent.percentage;
+            
+            // Calculate based on TOTAL EVENT CAPACITY × reference percentage
+            const dailyCapacity = universalSettings.eventCapacity;
+            const totalEventCapacity = dailyCapacity * days;
+            const recommendedQuantity = Math.round((totalEventCapacity * referencePercentage / 100));
+            
+            // Log for debugging in development
+            if (typeof systemState !== 'undefined' && systemState.debugMode) {
+                console.log(`Reference Event Calculation for ${productId}:`, {
+                    referenceEvent: referenceEvent.period,
+                    referencePercentage: referencePercentage,
+                    totalEventCapacity: totalEventCapacity,
+                    recommendedQuantity: recommendedQuantity,
+                    calculation: `${dailyCapacity} × ${days} days × ${referencePercentage}% = ${recommendedQuantity}`
+                });
+            }
+            
+            return recommendedQuantity;
+        }
+        
+        // Fallback 1: Broader matching by event type OR category
+        const broaderEvents = salesHistory.filter(sale => 
+            sale.productId === productId && 
+            (sale.eventType === referenceEventType || sale.eventCategory === referenceEventCategory)
+        );
+        
+        if (broaderEvents.length > 0) {
+            // Use average of broader matches
+            const avgPercentage = broaderEvents.reduce((sum, sale) => sum + sale.percentage, 0) / broaderEvents.length;
+            const dailyCapacity = universalSettings.eventCapacity;
+            const totalEventCapacity = dailyCapacity * days;
+            return Math.round((totalEventCapacity * avgPercentage / 100));
+        }
+        
+        // Final fallback: default 15% of total capacity
+        const dailyCapacity = universalSettings.eventCapacity;
+        const totalEventCapacity = dailyCapacity * days;
+        return Math.round(totalEventCapacity * 0.15);
+        
+    } catch (error) {
+        console.error('Error calculating event recommended quantity:', error);
+        return 0;
+    }
+}
+
+// Get recommendation with detailed explanation based on reference event
+function getRecommendationWithExplanation(productId, eventType, planningMode, planningDays) {
+    let recommended = 0;
+    let explanation = '';
+    let basis = '';
+    let source = '';
+    
+    try {
+        // Use the reference event from event planning state
+        const referenceEventType = eventPlanning.eventType || eventType;
+        const referenceEventCategory = eventPlanning.eventCategory || planningMode;
+        
+        // Find the reference event
+        const referenceEvents = salesHistory.filter(sale => 
+            sale.productId === productId && 
+            sale.eventType === referenceEventType && 
+            sale.eventCategory === referenceEventCategory
+        );
+        
+        if (referenceEvents.length > 0) {
+            const referenceEvent = referenceEvents[0];
+            const referencePercentage = referenceEvent.percentage;
+            
+            recommended = calculateEventRecommendedQuantity(productId, referenceEventType, referenceEventCategory, planningDays);
+            
+            explanation = `Based on Reference Event: ${referenceEvent.period}. This product had ${referencePercentage}% of total sales. Formula: ${universalSettings.eventCapacity} × ${planningDays} days × ${referencePercentage}% = ${recommended} bottles`;
+            basis = `Reference Event (${planningDays} days)`;
+            source = `Reference: ${referenceEvent.period}`;
+        } else {
+            // Fallback explanation
+            recommended = calculateEventRecommendedQuantity(productId, referenceEventType, referenceEventCategory, planningDays);
+            explanation = `No matching reference event found. Using default 15% of total capacity. Formula: ${universalSettings.eventCapacity} × ${planningDays} days × 15% = ${recommended} bottles`;
+            basis = `Default estimation (${planningDays} days)`;
+            source = 'Default calculation';
+        }
+        
+    } catch (error) {
+        console.error('Error getting recommendation explanation:', error);
+        recommended = 0;
+        explanation = 'Error calculating recommendation';
+        basis = 'Error';
+        source = 'Error';
+    }
+    
+    return {
+        quantity: recommended,
+        explanation: explanation,
+        basis: basis,
+        source: source
+    };
+}
+
+// =============================================================================
 // EVENT PRODUCT PRE-SELECTION
 // =============================================================================
 
@@ -179,7 +298,7 @@ function initializeEventProductPreSelection() {
 // EVENT RECOMMENDATIONS ENGINE
 // =============================================================================
 
-// Update event recommendations with proper pre-selection based on historical data
+// Update event recommendations with proper pre-selection based on reference event data
 function updateEventRecommendations() {
     try {
         const eventTypeElement = document.getElementById('event-type');
@@ -207,8 +326,8 @@ function updateEventRecommendations() {
         eventPlanning.eventDays = eventDays;
         eventPlanning.dailyEventCapacity = universalSettings.eventCapacity;
         
-        // Update historical reference
-        updateHistoricalReference(eventType, eventCategory);
+        // Update reference event info display
+        updateReferenceEventInfo(eventType, eventCategory);
         
         // Auto-select products based on event type and category
         updateProductSelection(eventType, eventCategory);
@@ -218,6 +337,11 @@ function updateEventRecommendations() {
         
         // Update event summary
         updateEventSummary(eventType, eventCategory, eventDays);
+        
+        // Log activity if logging is available
+        if (typeof logActivity === 'function') {
+            logActivity('Events', `Event recommendations updated for ${eventType} ${eventCategory} (${eventDays} days)`);
+        }
         
         debugLog('Event recommendations updated', {
             eventType: eventType,
@@ -231,55 +355,58 @@ function updateEventRecommendations() {
     }
 }
 
-// Update historical reference section
-function updateHistoricalReference(eventType, eventCategory) {
+// Update reference event information display
+function updateReferenceEventInfo(eventType, eventCategory) {
     try {
-        const relevantHistory = salesHistory.filter(sale => 
-            sale.eventType === eventType && sale.eventCategory === eventCategory
+        const referenceEventData = salesHistory.filter(sale => 
+            sale.eventType === eventType && 
+            sale.eventCategory === eventCategory
         );
         
-        let historyHtml = '';
-        if (relevantHistory.length > 0) {
-            const sampleEvent = relevantHistory[0];
-            const topPerformer = relevantHistory.reduce((max, sale) => 
+        let infoHtml = '';
+        if (referenceEventData.length > 0) {
+            // Get unique periods for this event type and category
+            const referencePeriods = [...new Set(referenceEventData.map(sale => sale.period))];
+            const referencePeriod = referencePeriods[0];
+            
+            // Find top performer in reference event
+            const topPerformer = referenceEventData.reduce((max, sale) => 
                 sale.percentage > max.percentage ? sale : max
             );
-            
             const topProduct = products.find(p => p.id === topPerformer.productId);
-            const uniqueEvents = [...new Set(relevantHistory.map(sale => sale.period))];
             
-            historyHtml = `
+            infoHtml = `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <strong>📊 Reference Event:</strong><br>
-                        ${sampleEvent.period}<br>
-                        <span class="text-xs">${sampleEvent.days} days duration</span>
+                        ${referencePeriod}<br>
+                        <span class="text-xs">Using exact percentages from this event</span>
                     </div>
                     <div>
-                        <strong>🏆 Top Performer:</strong><br>
+                        <strong>🏆 Top Performer in Reference:</strong><br>
                         ${topProduct?.icon} ${topProduct?.name}<br>
                         <span class="text-xs">${topPerformer.percentage}% of total sales</span>
                     </div>
                     <div>
-                        <strong>📈 Data Points:</strong><br>
-                        ${uniqueEvents.length} similar events<br>
-                        <span class="text-xs">${relevantHistory.length} product records</span>
+                        <strong>📈 Calculation Method:</strong><br>
+                        Reference Event Percentages<br>
+                        <span class="text-xs">Not historical averages</span>
                     </div>
                 </div>
             `;
         } else {
-            historyHtml = `
+            infoHtml = `
                 <div class="text-center p-4 bg-orange-50 border border-orange-200 rounded">
-                    <strong>🆕 New Event Type:</strong> Using average performance data for recommendations<br>
-                    <span class="text-xs mt-2 block">💡 Consider adding sales data after this event for better future predictions</span>
+                    <strong>🆕 New Event Type:</strong> No reference event found for ${eventType} ${eventCategory}<br>
+                    <span class="text-xs mt-2 block">💡 Using default 15% allocation per product for recommendations</span>
                 </div>
             `;
         }
         
-        safeUpdateHTML('historical-reference', historyHtml);
+        safeUpdateHTML('reference-event-info', infoHtml);
         
     } catch (error) {
-        console.error('Error updating historical reference:', error);
+        console.error('Error updating reference event info:', error);
     }
 }
 
@@ -333,7 +460,7 @@ function updateProductSelection(eventType, eventCategory) {
 // EVENT PRODUCT DISPLAY
 // =============================================================================
 
-// Generate event product display with calculation breakdown
+// Generate event product display with calculation breakdown using reference events
 function generateEventProductDisplay(eventType, eventCategory, eventDays) {
     try {
         const eventHtml = products.map(product => {
@@ -347,37 +474,37 @@ function generateEventProductDisplay(eventType, eventCategory, eventDays) {
             const daysLeft = earliestBatch ? getDaysUntilExpiration(earliestBatch.expirationDate) : 0;
             const willExpireDuringEvent = daysLeft < eventDays && daysLeft > 0;
             
-            // Determine selection reason based on historical data
+            // Determine selection reason and calculation breakdown based on REFERENCE EVENT
             let selectionReason = '';
             let calculationBreakdown = '';
             
             if (isSelected) {
-                const relevantHistory = salesHistory.filter(sale => 
+                const referenceEvents = salesHistory.filter(sale => 
                     sale.productId === product.id && 
                     sale.eventType === eventType && 
                     sale.eventCategory === eventCategory
                 );
                 
-                if (relevantHistory.length > 0) {
-                    const productData = relevantHistory[0];
-                    const avgPercentage = relevantHistory.reduce((sum, sale) => sum + sale.percentage, 0) / relevantHistory.length;
-                    selectionReason = `📊 Historical: ${avgPercentage.toFixed(1)}% avg (${relevantHistory.length} events)`;
-                    calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${avgPercentage.toFixed(1)}% = ${recommended} bottles`;
+                if (referenceEvents.length > 0) {
+                    const referenceEvent = referenceEvents[0];
+                    const referencePercentage = referenceEvent.percentage;
+                    selectionReason = `📊 Reference Event: ${referencePercentage.toFixed(1)}% in ${referenceEvent.period}`;
+                    calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${referencePercentage.toFixed(1)}% = ${recommended} bottles`;
                 } else {
-                    selectionReason = '⭐ Pre-selected based on overall performance';
+                    selectionReason = '⭐ Pre-selected (no reference event data)';
                     calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × 15% (default) = ${recommended} bottles`;
                 }
             } else {
                 // Calculate for non-selected products too
-                const relevantHistory = salesHistory.filter(sale => 
+                const referenceEvents = salesHistory.filter(sale => 
                     sale.productId === product.id && 
                     sale.eventType === eventType && 
                     sale.eventCategory === eventCategory
                 );
                 
-                if (relevantHistory.length > 0) {
-                    const avgPercentage = relevantHistory.reduce((sum, sale) => sum + sale.percentage, 0) / relevantHistory.length;
-                    calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${avgPercentage.toFixed(1)}% = ${recommended} bottles`;
+                if (referenceEvents.length > 0) {
+                    const referencePercentage = referenceEvents[0].percentage;
+                    calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${referencePercentage.toFixed(1)}% = ${recommended} bottles`;
                 } else {
                     calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × 15% (default) = ${recommended} bottles`;
                 }
@@ -425,7 +552,7 @@ function generateEventProductDisplay(eventType, eventCategory, eventDays) {
         
         safeUpdateHTML('event-products', eventHtml);
         
-        debugLog('Event product display generated', {
+        debugLog('Event product display generated with reference event calculations', {
             eventType: eventType,
             eventCategory: eventCategory,
             eventDays: eventDays,
@@ -438,7 +565,7 @@ function generateEventProductDisplay(eventType, eventCategory, eventDays) {
     }
 }
 
-// Toggle event product selection (Now works regardless of stock)
+// Toggle event product selection (works regardless of stock)
 function toggleEventProduct(productId) {
     try {
         const index = eventPlanning.selectedProducts.indexOf(productId);
@@ -456,6 +583,13 @@ function toggleEventProduct(productId) {
         generateEventProductDisplay(eventType, eventCategory, eventDays);
         updateEventSummary(eventType, eventCategory, eventDays);
         
+        // Log the product toggle
+        if (typeof logActivity === 'function') {
+            const product = products.find(p => p.id === productId);
+            const action = eventPlanning.selectedProducts.includes(productId) ? 'selected' : 'deselected';
+            logActivity('Events', `Product ${product?.name} ${action} for event planning`);
+        }
+        
         debugLog('Event product toggled', {
             productId: productId,
             isSelected: eventPlanning.selectedProducts.includes(productId),
@@ -471,7 +605,7 @@ function toggleEventProduct(productId) {
 // EVENT SUMMARY AND INSIGHTS
 // =============================================================================
 
-// Update event summary
+// Update event summary with reference event calculations
 function updateEventSummary(eventType = null, eventCategory = null, eventDays = null) {
     try {
         // Get current values if not provided
@@ -488,7 +622,7 @@ function updateEventSummary(eventType = null, eventCategory = null, eventDays = 
             return earliestBatch && !isExpired(earliestBatch.expirationDate);
         });
         
-        // Calculate total ONLY from selected valid products
+        // Calculate total ONLY from selected valid products using reference event data
         const totalBottles = validSelectedProducts.reduce((sum, id) => 
             sum + calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays), 0);
         
@@ -502,7 +636,7 @@ function updateEventSummary(eventType = null, eventCategory = null, eventDays = 
         // Generate smart recommendations
         generateSmartRecommendations(validSelectedProducts, eventDays, totalEventCapacity);
         
-        debugLog('Event summary updated', {
+        debugLog('Event summary updated with reference event calculations', {
             totalEventCapacity: totalEventCapacity,
             selectedProducts: validSelectedProducts.length,
             capacityUtilization: capacityUtilization
@@ -514,7 +648,7 @@ function updateEventSummary(eventType = null, eventCategory = null, eventDays = 
     }
 }
 
-// Generate smart recommendations
+// Generate smart recommendations with reference event insights
 function generateSmartRecommendations(validSelectedProducts, eventDays, totalEventCapacity) {
     try {
         let recommendations = [];
@@ -553,11 +687,24 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
             recommendations.push('✅ Good capacity utilization for your event duration.');
         }
         
+        // Reference event insights
+        const eventType = eventPlanning.eventType;
+        const eventCategory = eventPlanning.eventCategory;
+        const hasReferenceData = salesHistory.some(sale => 
+            sale.eventType === eventType && sale.eventCategory === eventCategory
+        );
+        
+        if (hasReferenceData) {
+            recommendations.push('📊 Using reference event data for accurate recommendations.');
+        } else {
+            recommendations.push('🆕 New event type - using default allocations. Consider adding actual data after event.');
+        }
+        
         // Top performer recommendation
         if (validSelectedProducts.includes('P004')) {
-            recommendations.push('🍑 Sun-Kissed Peach included - historically your top performer!');
+            recommendations.push('🍑 Sun-Kissed Peach included - typically top performer!');
         } else if (!expiredSelected.includes('P004')) {
-            recommendations.push('💡 Consider adding Sun-Kissed Peach - it\'s typically your best seller.');
+            recommendations.push('💡 Consider adding Sun-Kissed Peach - typically the best seller.');
         }
         
         // Product diversity recommendation
@@ -572,27 +719,6 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
             recommendations.push('🛡️ Safety reminder: All products have 7-day shelf life. Plan production accordingly.');
         }
         
-        // Stock availability check
-        const lowStockProducts = validSelectedProducts.filter(id => getTotalStock('event', id) < 20);
-        if (lowStockProducts.length > 0) {
-            const lowStockNames = lowStockProducts.map(id => products.find(p => p.id === id)?.name).join(', ');
-            recommendations.push(`📦 Low current stock for: ${lowStockNames}. Plan additional brewing.`);
-        }
-        
-        // Performance insights
-        const selectedProductsData = validSelectedProducts.map(id => {
-            const product = products.find(p => p.id === id);
-            const productSales = salesHistory.filter(sale => sale.productId === id);
-            const avgPercentage = productSales.length > 0 ? 
-                productSales.reduce((sum, sale) => sum + sale.percentage, 0) / productSales.length : 0;
-            return { id, name: product?.name, avgPercentage };
-        }).sort((a, b) => b.avgPercentage - a.avgPercentage);
-        
-        if (selectedProductsData.length > 0) {
-            const topPerformer = selectedProductsData[0];
-            recommendations.push(`📊 Expected top performer: ${topPerformer.name} (${topPerformer.avgPercentage.toFixed(1)}% historical avg)`);
-        }
-        
         safeUpdateHTML('event-recommendations', recommendations.join('<br>'));
         
     } catch (error) {
@@ -604,7 +730,7 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
 // EVENT PLANNING ACTIONS
 // =============================================================================
 
-// Export event planning data
+// Export event planning data with reference event information
 function exportEventPlan() {
     try {
         const eventType = document.getElementById('event-type')?.value || 'sulap';
@@ -612,16 +738,27 @@ function exportEventPlan() {
         const eventDays = parseInt(document.getElementById('event-days')?.value) || 3;
         const currentDate = getCurrentDate();
         
-        let csvContent = 'M1 - Event Planning Export\n';
+        let csvContent = 'M1 - Event Planning Export (Reference Event Method)\n';
         csvContent += `Date Generated,${currentDate.display}\n`;
         csvContent += `Event Type,${eventType.toUpperCase()}\n`;
         csvContent += `Event Category,${eventCategory}\n`;
         csvContent += `Event Duration,${eventDays} days\n`;
         csvContent += `Daily Capacity,${universalSettings.eventCapacity} bottles\n`;
-        csvContent += `Total Capacity,${universalSettings.eventCapacity * eventDays} bottles\n\n`;
+        csvContent += `Total Capacity,${universalSettings.eventCapacity * eventDays} bottles\n`;
+        csvContent += `Calculation Method,Reference Event Percentages (not historical averages)\n\n`;
+        
+        // Find reference event for documentation
+        const referenceEventData = salesHistory.filter(sale => 
+            sale.eventType === eventType && 
+            sale.eventCategory === eventCategory
+        );
+        const referencePeriods = [...new Set(referenceEventData.map(sale => sale.period))];
+        const referencePeriod = referencePeriods.length > 0 ? referencePeriods[0] : 'No reference event';
+        
+        csvContent += `Reference Event,${referencePeriod}\n\n`;
         
         csvContent += 'Product Analysis\n';
-        csvContent += 'Product ID,Product Name,Icon,Selected,Recommended Quantity,Daily Average,Current Stock,Stock Status,Calculation Breakdown\n';
+        csvContent += 'Product ID,Product Name,Icon,Selected,Reference Event %,Recommended Quantity,Daily Average,Current Stock,Stock Status,Calculation Breakdown\n';
         
         products.forEach(product => {
             const isSelected = eventPlanning.selectedProducts.includes(product.id);
@@ -631,24 +768,23 @@ function exportEventPlan() {
             const earliestBatch = getEarliestExpiringBatch('event', product.id);
             const stockStatus = earliestBatch ? getExpirationStatus(earliestBatch.expirationDate).text : 'No Stock';
             
-            // Get calculation breakdown
-            const relevantHistory = salesHistory.filter(sale => 
+            // Get reference event percentage
+            const referenceEvents = salesHistory.filter(sale => 
                 sale.productId === product.id && 
                 sale.eventType === eventType && 
                 sale.eventCategory === eventCategory
             );
+            const referencePercentage = referenceEvents.length > 0 ? 
+                referenceEvents[0].percentage : 15;
             
-            const avgPercentage = relevantHistory.length > 0 ? 
-                relevantHistory.reduce((sum, sale) => sum + sale.percentage, 0) / relevantHistory.length : 15;
+            const calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${referencePercentage.toFixed(1)}% = ${recommended}`;
             
-            const calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${avgPercentage.toFixed(1)}% = ${recommended}`;
-            
-            csvContent += `${product.id},${product.name},${product.icon},${isSelected ? 'Yes' : 'No'},${recommended},${dailyAvg},${currentStock},"${stockStatus}","${calculationBreakdown}"\n`;
+            csvContent += `${product.id},${product.name},${product.icon},${isSelected ? 'Yes' : 'No'},${referencePercentage.toFixed(1)}%,${recommended},${dailyAvg},${currentStock},"${stockStatus}","${calculationBreakdown}"\n`;
         });
         
         // Add selected products summary
         csvContent += '\nSelected Products Summary\n';
-        csvContent += 'Product Name,Icon,Recommended Quantity,Percentage of Event,Historical Data Points\n';
+        csvContent += 'Product Name,Icon,Reference Event %,Recommended Quantity,Percentage of Event\n';
         
         const selectedProducts = eventPlanning.selectedProducts.map(id => products.find(p => p.id === id)).filter(Boolean);
         selectedProducts.forEach(product => {
@@ -656,13 +792,15 @@ function exportEventPlan() {
             const totalEventCapacity = universalSettings.eventCapacity * eventDays;
             const percentage = ((recommended / totalEventCapacity) * 100).toFixed(1);
             
-            const relevantHistory = salesHistory.filter(sale => 
+            const referenceEvents = salesHistory.filter(sale => 
                 sale.productId === product.id && 
                 sale.eventType === eventType && 
                 sale.eventCategory === eventCategory
             );
+            const referencePercentage = referenceEvents.length > 0 ? 
+                referenceEvents[0].percentage.toFixed(1) : '15.0';
             
-            csvContent += `${product.name},${product.icon},${recommended},${percentage}%,${relevantHistory.length} events\n`;
+            csvContent += `${product.name},${product.icon},${referencePercentage}%,${recommended},${percentage}%\n`;
         });
         
         const totalSelected = eventPlanning.selectedProducts.reduce((sum, id) => 
@@ -670,16 +808,14 @@ function exportEventPlan() {
         csvContent += `\nTotal Selected Quantity,${totalSelected} bottles\n`;
         csvContent += `Capacity Utilization,${Math.round((totalSelected / (universalSettings.eventCapacity * eventDays)) * 100)}%\n`;
         
-        // Add recommendations
-        csvContent += '\nRecommendations\n';
-        const recommendations = document.getElementById('event-recommendations')?.textContent || '';
-        if (recommendations) {
-            csvContent += `"${recommendations.replace(/🚨|⚠️|💡|✅|🍑|📈|⚡|🛡️|📦|📊/g, '').replace(/<br>/g, '; ')}"\n`;
-        }
-        
         downloadCSV(csvContent, `event_plan_${eventType}_${eventCategory}_${currentDate.iso}.csv`);
         
         showNotification('Event plan exported successfully!', 'success');
+        
+        // Log the export activity
+        if (typeof logActivity === 'function') {
+            logActivity('Events', `Event plan exported for ${eventType} ${eventCategory} (${eventDays} days)`);
+        }
         
         debugLog('Event plan exported', {
             eventType: eventType,
@@ -710,11 +846,11 @@ function saveEventTemplate() {
                 eventDays: eventDays,
                 selectedProducts: [...eventPlanning.selectedProducts],
                 capacity: universalSettings.eventCapacity,
-                createdDate: getCurrentDate().iso
+                createdDate: getCurrentDate().iso,
+                calculationMethod: 'reference_event'
             };
             
-            // In a real application, this would be saved to a backend or local storage
-            // For now, we'll create a downloadable template file
+            // Create downloadable template file
             const templateContent = JSON.stringify(template, null, 2);
             const blob = new Blob([templateContent], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -725,6 +861,11 @@ function saveEventTemplate() {
             URL.revokeObjectURL(url);
             
             showNotification(`Template "${templateName}" saved successfully!`, 'success');
+            
+            // Log the template save
+            if (typeof logActivity === 'function') {
+                logActivity('Events', `Event template "${templateName}" saved`);
+            }
             
             debugLog('Event template saved', template);
         }
@@ -765,6 +906,11 @@ function loadEventTemplate() {
                         
                         showNotification(`Template "${template.name}" loaded successfully!`, 'success');
                         
+                        // Log the template load
+                        if (typeof logActivity === 'function') {
+                            logActivity('Events', `Event template "${template.name}" loaded`);
+                        }
+                        
                         debugLog('Event template loaded', template);
                         
                     } catch (error) {
@@ -790,6 +936,11 @@ function refreshEventRecommendations() {
         });
         
         showNotification('Event recommendations refreshed!', 'success', 1500);
+        
+        // Log the refresh activity
+        if (typeof logActivity === 'function') {
+            logActivity('Events', 'Event recommendations manually refreshed');
+        }
         
     } catch (error) {
         handleError(error, 'event recommendations refresh');
@@ -829,78 +980,6 @@ function syncEventPlanningSettings() {
         
     } catch (error) {
         console.error('Error syncing event planning settings:', error);
-    }
-}
-
-// =============================================================================
-// EVENT ANALYTICS AND INSIGHTS
-// =============================================================================
-
-// Generate event planning insights
-function generateEventPlanningInsights() {
-    try {
-        const insights = [];
-        const eventType = document.getElementById('event-type')?.value || 'sulap';
-        const eventCategory = document.getElementById('event-category')?.value || 'festival';
-        const eventDays = parseInt(document.getElementById('event-days')?.value) || 3;
-        
-        // Historical performance analysis
-        const relevantHistory = salesHistory.filter(sale => 
-            sale.eventType === eventType && sale.eventCategory === eventCategory
-        );
-        
-        if (relevantHistory.length > 0) {
-            const avgTotalSales = relevantHistory.reduce((sum, sale) => sum + sale.sales, 0) / relevantHistory.length;
-            const avgDailySales = avgTotalSales / eventDays;
-            
-            insights.push({
-                type: 'info',
-                title: 'Historical Performance',
-                message: `Similar events averaged ${avgTotalSales.toFixed(0)} bottles total (${avgDailySales.toFixed(0)}/day)`,
-                confidence: 'high'
-            });
-        }
-        
-        // Stock readiness analysis
-        const selectedProducts = eventPlanning.selectedProducts;
-        const lowStockProducts = selectedProducts.filter(id => getTotalStock('event', id) < 20);
-        
-        if (lowStockProducts.length > 0) {
-            insights.push({
-                type: 'warning',
-                title: 'Stock Readiness',
-                message: `${lowStockProducts.length} selected products have low stock. Consider brewing before event.`,
-                confidence: 'high'
-            });
-        }
-        
-        // Capacity optimization
-        const totalRecommended = selectedProducts.reduce((sum, id) => 
-            sum + calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays), 0);
-        const totalCapacity = universalSettings.eventCapacity * eventDays;
-        const utilization = (totalRecommended / totalCapacity) * 100;
-        
-        if (utilization < 60) {
-            insights.push({
-                type: 'opportunity',
-                title: 'Capacity Optimization',
-                message: `Only ${utilization.toFixed(0)}% capacity utilized. Consider adding more products or extending duration.`,
-                confidence: 'medium'
-            });
-        } else if (utilization > 100) {
-            insights.push({
-                type: 'critical',
-                title: 'Over Capacity',
-                message: `${utilization.toFixed(0)}% capacity planned. Reduce selection or increase daily capacity.`,
-                confidence: 'high'
-            });
-        }
-        
-        return insights;
-        
-    } catch (error) {
-        console.error('Error generating event planning insights:', error);
-        return [];
     }
 }
 
@@ -955,20 +1034,6 @@ function setupEventPlanningEventListeners() {
     }
 }
 
-// Cleanup event planning resources
-function cleanupEventPlanning() {
-    try {
-        // Remove event listeners
-        // Clear temporary data
-        // Save current state if needed
-        
-        debugLog('Event planning cleaned up');
-        
-    } catch (error) {
-        console.error('Error cleaning up event planning:', error);
-    }
-}
-
 // =============================================================================
 // EXPORT FOR EXTERNAL USE
 // =============================================================================
@@ -979,7 +1044,7 @@ if (typeof window !== 'undefined') {
         loadEventsTab,
         initializeEventProductPreSelection,
         updateEventRecommendations,
-        updateHistoricalReference,
+        updateReferenceEventInfo,
         updateProductSelection,
         generateEventProductDisplay,
         toggleEventProduct,
@@ -990,16 +1055,19 @@ if (typeof window !== 'undefined') {
         loadEventTemplate,
         refreshEventRecommendations,
         syncEventPlanningSettings,
-        generateEventPlanningInsights,
         initializeEventPlanning,
         setupEventPlanningEventListeners,
-        cleanupEventPlanning
+        calculateEventRecommendedQuantity,
+        getRecommendationWithExplanation
     };
 }
 
 // Auto-initialize when DOM is ready
 if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
-        // Don't auto-initialize here, will be called when tab is loaded
+        // Initialize event planning if events tab is loaded
+        if (document.getElementById('events-content')) {
+            initializeEventPlanning();
+        }
     });
 }
