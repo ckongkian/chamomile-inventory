@@ -810,51 +810,56 @@ This will link your selection to the inventory system for brewing management.
 
 Proceed with saving?`;
         
-if (confirm(confirmMessage)) {
-    // Save to event planning state (this persists across sessions)
-    eventPlanning.eventType = eventType;
-    eventPlanning.eventCategory = eventCategory;
-    eventPlanning.eventDays = eventDays;
-    eventPlanning.dailyEventCapacity = universalSettings.eventCapacity;
-    
-    // Save to localStorage for persistence
-    const savedSelection = {
-        timestamp: new Date().toISOString(),
-        eventType: eventType,
-        eventCategory: eventCategory,
-        eventDays: eventDays,
-        selectedProducts: [...eventPlanning.selectedProducts],
-        totalQuantity: selectedProductsTotal,
-        utilization: utilizationPercent
-    };
-    
-    localStorage.setItem('tea_inventory_event_selection', JSON.stringify(savedSelection));
-    
-    // Update inventory historical performance reference if it exists
-    if (typeof updateHistoricalPerformanceReference === 'function') {
-        updateHistoricalPerformanceReference();
-    }
-    
-    showNotification('✅ Event selection saved & linked to inventory!', 'success', 4000);
-    
-    // Log the activity
-    if (typeof logActivity === 'function') {
-        logActivity('Events', `Event selection saved: ${eventPlanning.selectedProducts.length} products for ${eventType} ${eventCategory} (${eventDays} days)`, {
-            selectedProducts: eventPlanning.selectedProducts,
-            totalQuantity: selectedProductsTotal,
-            utilization: utilizationPercent
-        });
-    }
-    
-    alert(`✅ Selection Saved Successfully!\n\nYour event planning selection has been saved and linked to the inventory system.\n\n• Selection: ${eventPlanning.selectedProducts.length} products\n• Total Quantity: ${selectedProductsTotal} bottles\n• Utilization: ${utilizationPercent.toFixed(1)}%\n\nYou can now view this selection in the Inventory tab under "Historical Performance Reference" (M1 - Event Planning only).`);
-    
-    // Redirect to inventory page after saving
-    selectTab('inventory');
-}
+        if (confirm(confirmMessage)) {
+            // Save to event planning state (this persists across sessions)
+            eventPlanning.eventType = eventType;
+            eventPlanning.eventCategory = eventCategory;
+            eventPlanning.eventDays = eventDays;
+            eventPlanning.dailyEventCapacity = universalSettings.eventCapacity;
+            
+            // Save to localStorage for persistence
+            const savedSelection = {
+                timestamp: new Date().toISOString(),
+                eventType: eventType,
+                eventCategory: eventCategory,
+                eventDays: eventDays,
+                selectedProducts: [...eventPlanning.selectedProducts],
+                totalQuantity: selectedProductsTotal,
+                utilization: utilizationPercent
+            };
+            
+            localStorage.setItem('tea_inventory_event_selection', JSON.stringify(savedSelection));
+            
+            // Update inventory historical performance reference if it exists
+            if (typeof updateHistoricalPerformanceReference === 'function') {
+                updateHistoricalPerformanceReference();
+            }
+            
+            showNotification('✅ Event selection saved & linked to inventory!', 'success', 4000);
+            
+            // Log the activity
+            if (typeof logActivity === 'function') {
+                logActivity('Events', `Event selection saved: ${eventPlanning.selectedProducts.length} products for ${eventType} ${eventCategory} (${eventDays} days)`, {
+                    selectedProducts: eventPlanning.selectedProducts,
+                    totalQuantity: selectedProductsTotal,
+                    utilization: utilizationPercent
+                });
+            }
+            
+            alert(`✅ Selection Saved Successfully!
 
-} catch (error) {
-handleError(error, 'save event selection');
-}
+Your event planning selection has been saved and linked to the inventory system.
+
+• Selection: ${eventPlanning.selectedProducts.length} products
+• Total Quantity: ${selectedProductsTotal} bottles
+• Utilization: ${utilizationPercent.toFixed(1)}%
+
+You can now view this selection in the Inventory tab under "Historical Performance Reference" (M1 - Event Planning only).`);
+        }
+        
+    } catch (error) {
+        handleError(error, 'save event selection');
+    }
 }
 
 // Export event planning data with reference event information

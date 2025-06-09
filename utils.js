@@ -303,27 +303,6 @@ function consumeStock(businessModel, productId, quantity) {
         // Sort by expiration date (FIFO)
         batches.sort((a, b) => new Date(a.expirationDate) - new Date(b.expirationDate));
         
-        // If no batches or all batches are expired, return false
-        if (batches.length === 0) return false;
-        
-        // Check if all batches are expired
-        const allExpired = batches.every(batch => isExpired(batch.expirationDate));
-        
-        // If all batches are expired, consume from the oldest expired batch
-        if (allExpired) {
-            const oldestBatch = batches[0];
-            const consumed = Math.min(oldestBatch.quantity, quantity);
-            oldestBatch.quantity -= consumed;
-            
-            // Remove batch if quantity reaches 0
-            if (oldestBatch.quantity === 0) {
-                batches.splice(0, 1);
-            }
-            
-            return consumed === quantity;
-        }
-        
-        // Normal consumption from non-expired batches
         let remainingToConsume = quantity;
         for (let i = 0; i < batches.length && remainingToConsume > 0; i++) {
             if (isExpired(batches[i].expirationDate)) continue;
