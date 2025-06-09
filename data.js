@@ -39,27 +39,13 @@ let salesHistory = [
     { productId: 'P004', period: 'SULAP Deepavali Nov 2024', sales: 140, days: 4, percentage: 38.46, eventType: 'sulap', eventCategory: 'festival' },
     { productId: 'P003', period: 'SULAP Deepavali Nov 2024', sales: 67, days: 4, percentage: 18.41, eventType: 'sulap', eventCategory: 'festival' },
     
-    // JAM event, 24-25 Aug 2024 (National Day) - 2 days
-    { productId: 'P001', period: 'JAM National Day Aug 2024', sales: 28, days: 2, percentage: 15.22, eventType: 'jam', eventCategory: 'national' },
-    { productId: 'P005', period: 'JAM National Day Aug 2024', sales: 35, days: 2, percentage: 19.02, eventType: 'jam', eventCategory: 'national' },
-    { productId: 'P002', period: 'JAM National Day Aug 2024', sales: 32, days: 2, percentage: 17.39, eventType: 'jam', eventCategory: 'national' },
-    { productId: 'P004', period: 'JAM National Day Aug 2024', sales: 52, days: 2, percentage: 28.26, eventType: 'jam', eventCategory: 'national' },
-    { productId: 'P003', period: 'JAM National Day Aug 2024', sales: 37, days: 2, percentage: 20.11, eventType: 'jam', eventCategory: 'national' },
-    
-    // SULAP event, 10-12 May 2024 (Hari Raya Puasa) - 3 days
-    { productId: 'P001', period: 'SULAP Hari Raya May 2024', sales: 41, days: 3, percentage: 13.55, eventType: 'sulap', eventCategory: 'festival' },
-    { productId: 'P005', period: 'SULAP Hari Raya May 2024', sales: 48, days: 3, percentage: 15.84, eventType: 'sulap', eventCategory: 'festival' },
-    { productId: 'P002', period: 'SULAP Hari Raya May 2024', sales: 33, days: 3, percentage: 10.89, eventType: 'sulap', eventCategory: 'festival' },
-    { productId: 'P004', period: 'SULAP Hari Raya May 2024', sales: 112, days: 3, percentage: 36.96, eventType: 'sulap', eventCategory: 'festival' },
-    { productId: 'P003', period: 'SULAP Hari Raya May 2024', sales: 42, days: 3, percentage: 13.86, eventType: 'sulap', eventCategory: 'festival' },
-    { productId: 'P006', period: 'SULAP Hari Raya May 2024', sales: 27, days: 3, percentage: 8.91, eventType: 'sulap', eventCategory: 'festival' },
-    
-    // JAM event, 1-2 Jun 2024 (Gawai Dayak) - 2 days
-    { productId: 'P001', period: 'JAM Gawai Dayak Jun 2024', sales: 29, days: 2, percentage: 16.85, eventType: 'jam', eventCategory: 'regional' },
-    { productId: 'P005', period: 'JAM Gawai Dayak Jun 2024', sales: 33, days: 2, percentage: 19.19, eventType: 'jam', eventCategory: 'regional' },
-    { productId: 'P002', period: 'JAM Gawai Dayak Jun 2024', sales: 30, days: 2, percentage: 17.44, eventType: 'jam', eventCategory: 'regional' },
-    { productId: 'P004', period: 'JAM Gawai Dayak Jun 2024', sales: 44, days: 2, percentage: 25.58, eventType: 'jam', eventCategory: 'regional' },
-    { productId: 'P003', period: 'JAM Gawai Dayak Jun 2024', sales: 36, days: 2, percentage: 20.93, eventType: 'jam', eventCategory: 'regional' }
+    // SULAP event, 24-26 Jan 2025 (Chinese New Year) - 3 days
+    { productId: 'P001', period: 'SULAP CNY Jan 2025', sales: 38, days: 3, percentage: 13.62, eventType: 'sulap', eventCategory: 'festival' },
+    { productId: 'P005', period: 'SULAP CNY Jan 2025', sales: 43, days: 3, percentage: 15.41, eventType: 'sulap', eventCategory: 'festival' },
+    { productId: 'P002', period: 'SULAP CNY Jan 2025', sales: 31, days: 3, percentage: 11.11, eventType: 'sulap', eventCategory: 'festival' },
+    { productId: 'P004', period: 'SULAP CNY Jan 2025', sales: 110, days: 3, percentage: 39.43, eventType: 'sulap', eventCategory: 'festival' },
+    { productId: 'P003', period: 'SULAP CNY Jan 2025', sales: 30, days: 3, percentage: 10.75, eventType: 'sulap', eventCategory: 'festival' },
+    { productId: 'P006', period: 'SULAP CNY Jan 2025', sales: 27, days: 3, percentage: 9.68, eventType: 'sulap', eventCategory: 'festival' },
 ];
 
 // Enhanced inventory structure with batch tracking
