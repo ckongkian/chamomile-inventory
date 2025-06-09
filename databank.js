@@ -1,5 +1,6 @@
-// Data bank management functionality
+// Data bank management functionality - FIXED VERSION
 
+// FIXED: Removed all auto-refresh mechanisms - Issue #3
 // Load databank tab content
 function loadDatabankTab() {
     const databankContent = `
@@ -48,6 +49,15 @@ function loadDatabankTab() {
                     
                     <div>
                         <h5 class="font-medium text-gray-800 mb-3">🎯 Product Performance Insights</h5>
+                        <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-2">
+                            <p class="text-sm text-yellow-800">
+                                <strong>📚 How to Read These Insights:</strong><br>
+                                • <strong>Average %:</strong> How much of total event sales this product typically gets<br>
+                                • <strong>Consistency:</strong> How reliable this performance is (higher = more predictable)<br>
+                                • <strong>Events:</strong> Number of events this data is based on<br>
+                                💡 <strong>Quick Rule:</strong> High average + High consistency = Reliable top performer
+                            </p>
+                        </div>
                         <div id="product-performance-insights" class="space-y-2">
                             <!-- Will be populated by JavaScript -->
                         </div>
@@ -343,9 +353,10 @@ function loadDatabankTab() {
     }, 100);
 }
 
-// Data Bank functionality
+// FIXED: Data Bank functionality without auto-refresh
 function updateDataBank() {
     try {
+        // REMOVED: No auto-refresh calls - only manual updates
         filterDataBank();
         updateDataSummary();
         updateAdvancedAnalytics();
@@ -354,6 +365,7 @@ function updateDataBank() {
     }
 }
 
+// FIXED: Filter function without auto-refresh
 function filterDataBank() {
     try {
         const filterEventType = document.getElementById('filter-event-type')?.value || '';
@@ -480,7 +492,7 @@ function updateDataSummary() {
     }
 }
 
-// NEW: Advanced Analytics Functions
+// Advanced Analytics Functions
 function updateAdvancedAnalytics() {
     try {
         updateEventTypeAnalytics();
@@ -517,6 +529,7 @@ function updateEventTypeAnalytics() {
     }
 }
 
+// FIXED: Enhanced Product Performance Insights with clearer explanations - Issue #5
 function updateProductPerformanceInsights() {
     try {
         const productStats = products.map(product => {
@@ -532,21 +545,66 @@ function updateProductPerformanceInsights() {
             const rank = index + 1;
             const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
             
+            // FIXED: More intuitive performance descriptions
+            let performanceLevel = '';
+            let performanceColor = '';
+            
+            if (stat.avgPercentage >= 30) {
+                performanceLevel = 'Star Performer';
+                performanceColor = 'text-green-600';
+            } else if (stat.avgPercentage >= 20) {
+                performanceLevel = 'Strong Seller';
+                performanceColor = 'text-blue-600';
+            } else if (stat.avgPercentage >= 15) {
+                performanceLevel = 'Good Choice';
+                performanceColor = 'text-orange-600';
+            } else {
+                performanceLevel = 'Specialty Item';
+                performanceColor = 'text-gray-600';
+            }
+            
+            let consistencyLevel = '';
+            if (stat.consistency >= 80) {
+                consistencyLevel = 'Very Reliable';
+            } else if (stat.consistency >= 60) {
+                consistencyLevel = 'Fairly Reliable';
+            } else {
+                consistencyLevel = 'Variable';
+            }
+            
             return `
                 <div class="p-3 rounded-lg border ${
                     rank === 1 ? 'bg-yellow-50 border-yellow-200' :
                     rank === 2 ? 'bg-gray-50 border-gray-200' : 
                     'bg-orange-50 border-orange-200'
                 }">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center space-x-2">
                             <span>${medal}</span>
-                            <span class="font-medium">${stat.product.name}</span>
+                            <span class="font-medium">${stat.product.icon} ${stat.product.name}</span>
                         </div>
                         <span class="text-sm font-semibold">${stat.avgPercentage.toFixed(1)}%</span>
                     </div>
-                    <div class="text-xs text-gray-600 mt-1">
-                        Consistency: ${stat.consistency}% • ${stat.dataPoints} events
+                    <div class="text-xs space-y-1">
+                        <div class="flex justify-between">
+                            <span>Performance:</span>
+                            <span class="font-medium ${performanceColor}">${performanceLevel}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Reliability:</span>
+                            <span class="font-medium">${consistencyLevel} (${stat.consistency}%)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Based on:</span>
+                            <span class="font-medium">${stat.dataPoints} events</span>
+                        </div>
+                    </div>
+                    <div class="mt-2 p-2 bg-white rounded text-xs">
+                        <strong>💡 What this means:</strong> 
+                        ${stat.avgPercentage >= 25 ? 'Top choice for events - consistently popular' :
+                          stat.avgPercentage >= 20 ? 'Solid performer - good for variety' :
+                          stat.avgPercentage >= 15 ? 'Dependable option - appeals to many' :
+                          'Special appeal - unique taste profile'}
                     </div>
                 </div>
             `;
@@ -754,6 +812,8 @@ function saveNewData() {
         newSalesData.forEach(data => salesHistory.push(data));
 
         closeAddDataModal();
+        
+        // FIXED: Manual update only - no auto-refresh
         updateDataBank();
         
         // Update other components that depend on sales history
@@ -776,6 +836,8 @@ function deleteDataEntry(index) {
         try {
             const deletedSale = salesHistory[index];
             salesHistory.splice(index, 1);
+            
+            // FIXED: Manual update only
             updateDataBank();
             
             // Update dependent components
@@ -900,6 +962,8 @@ function saveEditedData() {
         };
         
         closeEditDataModal();
+        
+        // FIXED: Manual update only
         updateDataBank();
         
         // Update dependent components
@@ -971,7 +1035,8 @@ function sortDataBank(column) {
             }
         });
         
-        filterDataBank(); // Refresh the display
+        // FIXED: Manual refresh only
+        filterDataBank();
         
     } catch (error) {
         handleError(error, 'data bank sorting');

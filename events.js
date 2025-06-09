@@ -1,5 +1,5 @@
 // =============================================================================
-// OPTIMIZED EVENT PLANNING AND RECOMMENDATIONS (events.js)
+// OPTIMIZED EVENT PLANNING AND RECOMMENDATIONS (events.js) - FIXED VERSION
 // =============================================================================
 
 // Load events tab content
@@ -55,30 +55,50 @@ function loadEventsTab() {
                     </div>
                 </div>
                 
+                <!-- FIXED: Enhanced Event Summary with Selected Products Comparison -->
                 <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="p-4 bg-blue-50 rounded-lg">
-                        <h4 class="font-semibold text-blue-900 mb-2">📋 Event Summary</h4>
+                        <h4 class="font-semibold text-blue-900 mb-2">📋 Event Capacity Summary</h4>
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span>Total bottles needed:</span>
-                                <span class="font-bold text-blue-900" id="event-total">0 bottles</span>
+                                <span>Total event capacity:</span>
+                                <span class="font-bold text-blue-900" id="event-total-capacity">330 bottles</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Daily production:</span>
-                                <span class="font-bold" id="daily-production">0 bottles/day</span>
+                                <span class="font-bold" id="daily-production">110 bottles/day</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Capacity utilization:</span>
-                                <span class="font-bold" id="capacity-utilization">0%</span>
+                                <span class="font-bold" id="capacity-utilization">100%</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="p-4 bg-green-50 rounded-lg">
-                        <h4 class="font-semibold text-green-900 mb-2">💡 Smart Recommendations</h4>
-                        <div id="event-recommendations" class="text-sm text-green-700">
-                            <!-- Will be populated by JavaScript -->
+                        <h4 class="font-semibold text-green-900 mb-2">🎯 Selected Products Summary</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>Selected products total:</span>
+                                <span class="font-bold text-green-900" id="selected-products-total">0 bottles</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Utilization vs capacity:</span>
+                                <span class="font-bold" id="utilization-comparison">0%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Products selected:</span>
+                                <span class="font-bold" id="products-selected-count">0 of 6</span>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Smart Recommendations Section -->
+                <div class="mb-4 p-4 bg-green-50 rounded-lg">
+                    <h4 class="font-semibold text-green-900 mb-2">💡 Smart Recommendations</h4>
+                    <div id="event-recommendations" class="text-sm text-green-700">
+                        <!-- Will be populated by JavaScript -->
                     </div>
                 </div>
 
@@ -86,23 +106,21 @@ function loadEventsTab() {
                     <!-- Will be populated by JavaScript -->
                 </div>
                 
-                <!-- Event Planning Actions -->
-                <div class="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <h5 class="font-medium text-gray-800 mb-3">⚡ Event Planning Actions</h5>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <button onclick="exportEventPlan()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded text-sm interactive-element">
+                <!-- FIXED: Save Selection Section (replaces Event Planning Actions) -->
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h5 class="font-medium text-blue-800 mb-3">💾 Save Current Selection</h5>
+                    <div class="flex space-x-3">
+                        <button onclick="saveEventSelection()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                            💾 Save Selection & Link to Inventory
+                        </button>
+                        <button onclick="exportEventPlan()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium">
                             📋 Export Event Plan
                         </button>
-                        <button onclick="saveEventTemplate()" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded text-sm interactive-element">
-                            💾 Save as Template
-                        </button>
-                        <button onclick="loadEventTemplate()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-4 py-2 rounded text-sm interactive-element">
-                            📁 Load Template
-                        </button>
-                        <button onclick="refreshEventRecommendations()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm interactive-element">
+                        <button onclick="refreshEventRecommendations()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
                             🔄 Refresh Data
                         </button>
                     </div>
+                    <p class="text-xs text-blue-600 mt-2">Saving will link your selection to the inventory system for brewing management</p>
                 </div>
             </div>
         </div>
@@ -335,7 +353,7 @@ function updateEventRecommendations() {
         // Generate product recommendations with calculation breakdown
         generateEventProductDisplay(eventType, eventCategory, eventDays);
         
-        // Update event summary
+        // FIXED: Update event summary with selected products comparison
         updateEventSummary(eventType, eventCategory, eventDays);
         
         // Log activity if logging is available
@@ -605,7 +623,7 @@ function toggleEventProduct(productId) {
 // EVENT SUMMARY AND INSIGHTS
 // =============================================================================
 
-// Update event summary with reference event calculations
+// FIXED: Update event summary with selected products comparison
 function updateEventSummary(eventType = null, eventCategory = null, eventDays = null) {
     try {
         // Get current values if not provided
@@ -613,33 +631,52 @@ function updateEventSummary(eventType = null, eventCategory = null, eventDays = 
         if (!eventCategory) eventCategory = document.getElementById('event-category')?.value || 'festival';
         if (!eventDays) eventDays = parseInt(document.getElementById('event-days')?.value) || 3;
         
-        // Total bottles needed = Event Duration × Daily Brewing Capacity
+        // Total event capacity = Event Duration × Daily Brewing Capacity
         const totalEventCapacity = universalSettings.eventCapacity * eventDays;
         
-        // Filter out expired products from calculations and use ONLY selected products
-        const validSelectedProducts = eventPlanning.selectedProducts.filter(id => {
-            const earliestBatch = getEarliestExpiringBatch('event', id);
-            return earliestBatch && !isExpired(earliestBatch.expirationDate);
-        });
-        
-        // Calculate total ONLY from selected valid products using reference event data
-        const totalBottles = validSelectedProducts.reduce((sum, id) => 
+        // Calculate total from SELECTED products only
+        const selectedProductsTotal = eventPlanning.selectedProducts.reduce((sum, id) => 
             sum + calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays), 0);
+        
+        // Calculate utilization comparison
+        const utilizationComparison = totalEventCapacity > 0 ? 
+            Math.round((selectedProductsTotal / totalEventCapacity) * 100) : 0;
         
         const dailyProduction = Math.round(totalEventCapacity / eventDays);
         const capacityUtilization = Math.round((totalEventCapacity / (universalSettings.eventCapacity * eventDays)) * 100);
         
-        safeUpdateText('event-total', `${totalEventCapacity} bottles`);
+        // Update event capacity summary
+        safeUpdateText('event-total-capacity', `${totalEventCapacity} bottles`);
         safeUpdateText('daily-production', `${dailyProduction} bottles/day`);
         safeUpdateText('capacity-utilization', `${capacityUtilization}%`);
         
-        // Generate smart recommendations
-        generateSmartRecommendations(validSelectedProducts, eventDays, totalEventCapacity);
+        // FIXED: Update selected products summary
+        safeUpdateText('selected-products-total', `${selectedProductsTotal} bottles`);
+        safeUpdateText('utilization-comparison', `${utilizationComparison}%`);
+        safeUpdateText('products-selected-count', `${eventPlanning.selectedProducts.length} of ${products.length}`);
         
-        debugLog('Event summary updated with reference event calculations', {
+        // Color code the utilization comparison
+        const utilizationElement = document.getElementById('utilization-comparison');
+        if (utilizationElement) {
+            if (utilizationComparison > 100) {
+                utilizationElement.className = 'font-bold text-red-600';
+            } else if (utilizationComparison > 90) {
+                utilizationElement.className = 'font-bold text-orange-600';
+            } else if (utilizationComparison > 70) {
+                utilizationElement.className = 'font-bold text-green-600';
+            } else {
+                utilizationElement.className = 'font-bold text-blue-600';
+            }
+        }
+        
+        // Generate smart recommendations
+        generateSmartRecommendations(eventPlanning.selectedProducts, eventDays, totalEventCapacity, selectedProductsTotal);
+        
+        debugLog('Event summary updated with selected products comparison', {
             totalEventCapacity: totalEventCapacity,
-            selectedProducts: validSelectedProducts.length,
-            capacityUtilization: capacityUtilization
+            selectedProductsTotal: selectedProductsTotal,
+            utilizationComparison: utilizationComparison,
+            selectedProducts: eventPlanning.selectedProducts.length
         });
         
     } catch (error) {
@@ -648,13 +685,26 @@ function updateEventSummary(eventType = null, eventCategory = null, eventDays = 
     }
 }
 
-// Generate smart recommendations with reference event insights
-function generateSmartRecommendations(validSelectedProducts, eventDays, totalEventCapacity) {
+// FIXED: Generate smart recommendations with selected products focus
+function generateSmartRecommendations(selectedProducts, eventDays, totalEventCapacity, selectedProductsTotal) {
     try {
         let recommendations = [];
         
+        // Check utilization of selected products vs total capacity
+        const utilizationPercent = totalEventCapacity > 0 ? (selectedProductsTotal / totalEventCapacity) * 100 : 0;
+        
+        if (utilizationPercent > 100) {
+            recommendations.push(`🚨 Over capacity! Selected products need ${selectedProductsTotal} bottles but total capacity is ${totalEventCapacity}. Reduce selection or extend event duration.`);
+        } else if (utilizationPercent < 50) {
+            recommendations.push(`💡 Low utilization (${utilizationPercent.toFixed(0)}%). Consider adding more products or reducing event duration to optimize capacity.`);
+        } else if (utilizationPercent >= 80 && utilizationPercent <= 100) {
+            recommendations.push(`✅ Excellent utilization (${utilizationPercent.toFixed(0)}%)! Good balance between variety and capacity.`);
+        } else {
+            recommendations.push(`⚡ Good utilization (${utilizationPercent.toFixed(0)}%). Consider fine-tuning product selection for optimal capacity use.`);
+        }
+        
         // Check for expired products in selection
-        const expiredSelected = eventPlanning.selectedProducts.filter(id => {
+        const expiredSelected = selectedProducts.filter(id => {
             const earliestBatch = getEarliestExpiringBatch('event', id);
             return !earliestBatch || isExpired(earliestBatch.expirationDate);
         });
@@ -665,7 +715,7 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
         }
         
         // Check for products expiring during event
-        const expiringDuringEvent = validSelectedProducts.filter(id => {
+        const expiringDuringEvent = selectedProducts.filter(id => {
             const earliestBatch = getEarliestExpiringBatch('event', id);
             if (!earliestBatch) return false;
             const daysLeft = getDaysUntilExpiration(earliestBatch.expirationDate);
@@ -675,16 +725,6 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
         if (expiringDuringEvent.length > 0) {
             const expiringNames = expiringDuringEvent.map(id => products.find(p => p.id === id)?.name).join(', ');
             recommendations.push(`⚠️ ${expiringDuringEvent.length} products will expire during event (${expiringNames}) - use first!`);
-        }
-        
-        // Capacity recommendations
-        const capacityUtilization = Math.round((totalEventCapacity / (universalSettings.eventCapacity * eventDays)) * 100);
-        if (capacityUtilization > 100) {
-            recommendations.push('⚠️ Over capacity! Reduce selection or increase daily capacity in settings.');
-        } else if (capacityUtilization < 70) {
-            recommendations.push('💡 Under-utilizing capacity. Consider adding more products or extending event duration.');
-        } else {
-            recommendations.push('✅ Good capacity utilization for your event duration.');
         }
         
         // Reference event insights
@@ -701,22 +741,17 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
         }
         
         // Top performer recommendation
-        if (validSelectedProducts.includes('P004')) {
+        if (selectedProducts.includes('P004')) {
             recommendations.push('🍑 Sun-Kissed Peach included - typically top performer!');
-        } else if (!expiredSelected.includes('P004')) {
+        } else {
             recommendations.push('💡 Consider adding Sun-Kissed Peach - typically the best seller.');
         }
         
         // Product diversity recommendation
-        if (validSelectedProducts.length < 3) {
+        if (selectedProducts.length < 3) {
             recommendations.push('📈 Consider adding more product variety to appeal to different customer preferences.');
-        } else if (validSelectedProducts.length > 5) {
+        } else if (selectedProducts.length > 5) {
             recommendations.push('⚡ Large product selection - ensure adequate promotion for all items.');
-        }
-        
-        // Food safety reminder
-        if (validSelectedProducts.length > 0) {
-            recommendations.push('🛡️ Safety reminder: All products have 7-day shelf life. Plan production accordingly.');
         }
         
         safeUpdateHTML('event-recommendations', recommendations.join('<br>'));
@@ -727,8 +762,105 @@ function generateSmartRecommendations(validSelectedProducts, eventDays, totalEve
 }
 
 // =============================================================================
-// EVENT PLANNING ACTIONS
+// EVENT PLANNING ACTIONS (FIXED)
 // =============================================================================
+
+// FIXED: Save Event Selection function
+function saveEventSelection() {
+    try {
+        const eventType = document.getElementById('event-type')?.value || 'sulap';
+        const eventCategory = document.getElementById('event-category')?.value || 'festival';
+        const eventDays = parseInt(document.getElementById('event-days')?.value) || 3;
+        
+        if (eventPlanning.selectedProducts.length === 0) {
+            alert('❌ No products selected!\n\nPlease select at least one product before saving.');
+            return;
+        }
+        
+        // Calculate total quantities for confirmation
+        const selectedProductsTotal = eventPlanning.selectedProducts.reduce((sum, id) => 
+            sum + calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays), 0);
+        
+        const totalEventCapacity = universalSettings.eventCapacity * eventDays;
+        const utilizationPercent = (selectedProductsTotal / totalEventCapacity) * 100;
+        
+        // Create selection summary for confirmation
+        const selectedProductNames = eventPlanning.selectedProducts.map(id => {
+            const product = products.find(p => p.id === id);
+            const quantity = calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays);
+            return `• ${product?.icon} ${product?.name}: ${quantity} bottles`;
+        }).join('\n');
+        
+        const confirmMessage = `💾 Save Event Selection & Link to Inventory?
+
+Event Details:
+• Type: ${eventType.toUpperCase()}
+• Category: ${eventCategory}
+• Duration: ${eventDays} days
+• Total Capacity: ${totalEventCapacity} bottles
+
+Selected Products (${eventPlanning.selectedProducts.length}):
+${selectedProductNames}
+
+Summary:
+• Selected Total: ${selectedProductsTotal} bottles
+• Capacity Utilization: ${utilizationPercent.toFixed(1)}%
+
+This will link your selection to the inventory system for brewing management.
+
+Proceed with saving?`;
+        
+        if (confirm(confirmMessage)) {
+            // Save to event planning state (this persists across sessions)
+            eventPlanning.eventType = eventType;
+            eventPlanning.eventCategory = eventCategory;
+            eventPlanning.eventDays = eventDays;
+            eventPlanning.dailyEventCapacity = universalSettings.eventCapacity;
+            
+            // Save to localStorage for persistence
+            const savedSelection = {
+                timestamp: new Date().toISOString(),
+                eventType: eventType,
+                eventCategory: eventCategory,
+                eventDays: eventDays,
+                selectedProducts: [...eventPlanning.selectedProducts],
+                totalQuantity: selectedProductsTotal,
+                utilization: utilizationPercent
+            };
+            
+            localStorage.setItem('tea_inventory_event_selection', JSON.stringify(savedSelection));
+            
+            // Update inventory historical performance reference if it exists
+            if (typeof updateHistoricalPerformanceReference === 'function') {
+                updateHistoricalPerformanceReference();
+            }
+            
+            showNotification('✅ Event selection saved & linked to inventory!', 'success', 4000);
+            
+            // Log the activity
+            if (typeof logActivity === 'function') {
+                logActivity('Events', `Event selection saved: ${eventPlanning.selectedProducts.length} products for ${eventType} ${eventCategory} (${eventDays} days)`, {
+                    selectedProducts: eventPlanning.selectedProducts,
+                    totalQuantity: selectedProductsTotal,
+                    utilization: utilizationPercent
+                });
+            }
+            
+            alert(`✅ Selection Saved Successfully!
+
+Your event planning selection has been saved and linked to the inventory system.
+
+• Selection: ${eventPlanning.selectedProducts.length} products
+• Total Quantity: ${selectedProductsTotal} bottles
+• Utilization: ${utilizationPercent.toFixed(1)}%
+
+You can now view this selection in the Inventory tab under "Historical Performance Reference" (M1 - Event Planning only).`);
+        }
+        
+    } catch (error) {
+        handleError(error, 'save event selection');
+    }
+}
 
 // Export event planning data with reference event information
 function exportEventPlan() {
@@ -775,7 +907,7 @@ function exportEventPlan() {
                 sale.eventCategory === eventCategory
             );
             const referencePercentage = referenceEvents.length > 0 ? 
-                referenceEvents[0].percentage : 15;
+                referenceEvents[0].percentage : 15; // Default if no reference
             
             const calculationBreakdown = `${universalSettings.eventCapacity} × ${eventDays} days × ${referencePercentage.toFixed(1)}% = ${recommended}`;
             
@@ -787,9 +919,10 @@ function exportEventPlan() {
         csvContent += 'Product Name,Icon,Reference Event %,Recommended Quantity,Percentage of Event\n';
         
         const selectedProducts = eventPlanning.selectedProducts.map(id => products.find(p => p.id === id)).filter(Boolean);
+        const totalEventCapacity = universalSettings.eventCapacity * eventDays;
+        
         selectedProducts.forEach(product => {
             const recommended = calculateEventRecommendedQuantity(product.id, eventType, eventCategory, eventDays);
-            const totalEventCapacity = universalSettings.eventCapacity * eventDays;
             const percentage = ((recommended / totalEventCapacity) * 100).toFixed(1);
             
             const referenceEvents = salesHistory.filter(sale => 
@@ -806,7 +939,7 @@ function exportEventPlan() {
         const totalSelected = eventPlanning.selectedProducts.reduce((sum, id) => 
             sum + calculateEventRecommendedQuantity(id, eventType, eventCategory, eventDays), 0);
         csvContent += `\nTotal Selected Quantity,${totalSelected} bottles\n`;
-        csvContent += `Capacity Utilization,${Math.round((totalSelected / (universalSettings.eventCapacity * eventDays)) * 100)}%\n`;
+        csvContent += `Capacity Utilization,${Math.round((totalSelected / totalEventCapacity) * 100)}%\n`;
         
         downloadCSV(csvContent, `event_plan_${eventType}_${eventCategory}_${currentDate.iso}.csv`);
         
@@ -826,105 +959,6 @@ function exportEventPlan() {
         
     } catch (error) {
         handleError(error, 'event plan export');
-    }
-}
-
-// Save event template
-function saveEventTemplate() {
-    try {
-        const eventType = document.getElementById('event-type')?.value || 'sulap';
-        const eventCategory = document.getElementById('event-category')?.value || 'festival';
-        const eventDays = parseInt(document.getElementById('event-days')?.value) || 3;
-        
-        const templateName = prompt(`Save event template as:\n\nSuggested: ${eventType.toUpperCase()} ${eventCategory} ${eventDays}D Template`);
-        
-        if (templateName) {
-            const template = {
-                name: templateName,
-                eventType: eventType,
-                eventCategory: eventCategory,
-                eventDays: eventDays,
-                selectedProducts: [...eventPlanning.selectedProducts],
-                capacity: universalSettings.eventCapacity,
-                createdDate: getCurrentDate().iso,
-                calculationMethod: 'reference_event'
-            };
-            
-            // Create downloadable template file
-            const templateContent = JSON.stringify(template, null, 2);
-            const blob = new Blob([templateContent], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${templateName.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-            
-            showNotification(`Template "${templateName}" saved successfully!`, 'success');
-            
-            // Log the template save
-            if (typeof logActivity === 'function') {
-                logActivity('Events', `Event template "${templateName}" saved`);
-            }
-            
-            debugLog('Event template saved', template);
-        }
-        
-    } catch (error) {
-        handleError(error, 'event template save');
-    }
-}
-
-// Load event template
-function loadEventTemplate() {
-    try {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const template = JSON.parse(e.target.result);
-                        
-                        // Validate template structure
-                        if (!template.eventType || !template.eventCategory || !template.selectedProducts) {
-                            throw new Error('Invalid template format');
-                        }
-                        
-                        // Apply template
-                        safeUpdateValue('event-type', template.eventType);
-                        safeUpdateValue('event-category', template.eventCategory);
-                        safeUpdateValue('event-days', template.eventDays || 3);
-                        
-                        eventPlanning.selectedProducts = [...template.selectedProducts];
-                        
-                        // Update display
-                        updateEventRecommendations();
-                        
-                        showNotification(`Template "${template.name}" loaded successfully!`, 'success');
-                        
-                        // Log the template load
-                        if (typeof logActivity === 'function') {
-                            logActivity('Events', `Event template "${template.name}" loaded`);
-                        }
-                        
-                        debugLog('Event template loaded', template);
-                        
-                    } catch (error) {
-                        showNotification('Error loading template: Invalid file format', 'error');
-                        console.error('Template load error:', error);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        };
-        input.click();
-        
-    } catch (error) {
-        handleError(error, 'event template load');
     }
 }
 
@@ -996,6 +1030,9 @@ function initializeEventPlanning() {
         // Initialize product pre-selection
         initializeEventProductPreSelection();
         
+        // Load saved selection if exists
+        loadSavedEventSelection();
+        
         // Update all recommendations
         updateEventRecommendations();
         
@@ -1006,6 +1043,31 @@ function initializeEventPlanning() {
         
     } catch (error) {
         handleError(error, 'event planning initialization');
+    }
+}
+
+// Load saved event selection from localStorage
+function loadSavedEventSelection() {
+    try {
+        const savedSelection = localStorage.getItem('tea_inventory_event_selection');
+        if (savedSelection) {
+            const selection = JSON.parse(savedSelection);
+            
+            // Restore selection
+            eventPlanning.selectedProducts = selection.selectedProducts || [];
+            eventPlanning.eventType = selection.eventType || 'sulap';
+            eventPlanning.eventCategory = selection.eventCategory || 'festival';
+            eventPlanning.eventDays = selection.eventDays || 3;
+            
+            // Update form elements
+            safeUpdateValue('event-type', selection.eventType);
+            safeUpdateValue('event-category', selection.eventCategory);
+            safeUpdateValue('event-days', selection.eventDays);
+            
+            debugLog('Event selection loaded from storage', selection);
+        }
+    } catch (error) {
+        console.error('Error loading saved event selection:', error);
     }
 }
 
@@ -1050,15 +1112,15 @@ if (typeof window !== 'undefined') {
         toggleEventProduct,
         updateEventSummary,
         generateSmartRecommendations,
+        saveEventSelection,
         exportEventPlan,
-        saveEventTemplate,
-        loadEventTemplate,
         refreshEventRecommendations,
         syncEventPlanningSettings,
         initializeEventPlanning,
         setupEventPlanningEventListeners,
         calculateEventRecommendedQuantity,
-        getRecommendationWithExplanation
+        getRecommendationWithExplanation,
+        loadSavedEventSelection
     };
 }
 

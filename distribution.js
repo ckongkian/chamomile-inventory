@@ -67,7 +67,7 @@ function loadDistributionTab() {
                         <div class="space-y-3">
                             <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
                                 <span>Current Stock:</span>
-                                <span class="font-semibold" id="vpot-stock">42 bottles</span>
+                                <span class="font-semibold" id="vpot-stock">0 bottles</span>
                             </div>
                             <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
                                 <span>Daily Distribution Brewing:</span>
@@ -81,7 +81,7 @@ function loadDistributionTab() {
                             </div>
                             <div class="flex justify-between items-center p-3 bg-blue-50 rounded border border-blue-200">
                                 <span>Available Tomorrow:</span>
-                                <span class="font-semibold text-blue-700" id="vpot-available">42 bottles</span>
+                                <span class="font-semibold text-blue-700" id="vpot-available">0 bottles</span>
                             </div>
                             <div class="flex justify-between items-center p-3 bg-green-50 rounded border border-green-200">
                                 <span>Daily Target:</span>
@@ -102,12 +102,12 @@ function loadDistributionTab() {
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium mb-1">Local Business %</label>
-                                    <input type="number" id="local-business-percent" value="60" min="0" max="100" 
+                                    <input type="number" id="local-business-percent" value="100" min="0" max="100" 
                                            class="w-full p-2 border rounded text-sm" onchange="updateChannelAllocation()">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium mb-1">Direct Sales %</label>
-                                    <input type="number" id="direct-sales-percent" value="40" min="0" max="100" 
+                                    <input type="number" id="direct-sales-percent" value="0" min="0" max="100" 
                                            class="w-full p-2 border rounded text-sm" onchange="updateChannelAllocation()">
                                 </div>
                             </div>
@@ -118,10 +118,10 @@ function loadDistributionTab() {
                             <div class="border rounded-lg p-3">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="font-medium">Local Businesses</span>
-                                    <span class="text-green-600 font-semibold" id="local-business-target">60 bottles/day</span>
+                                    <span class="text-green-600 font-semibold" id="local-business-target">100 bottles/day</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div id="local-business-bar" class="bg-green-500 h-2 rounded-full" style="width: 60%"></div>
+                                    <div id="local-business-bar" class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">Cafes, restaurants, retail stores in Kota Kinabalu</p>
                             </div>
@@ -129,10 +129,10 @@ function loadDistributionTab() {
                             <div class="border rounded-lg p-3">
                                 <div class="flex justify-between items-center mb-2">
                                     <span class="font-medium">Direct Sales</span>
-                                    <span class="text-blue-600 font-semibold" id="direct-sales-target">40 bottles/day</span>
+                                    <span class="text-blue-600 font-semibold" id="direct-sales-target">0 bottles/day</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div id="direct-sales-bar" class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
+                                    <div id="direct-sales-bar" class="bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
                                 </div>
                                 <p class="text-xs text-gray-500 mt-1">Online orders, walk-ins, special orders</p>
                             </div>
@@ -142,12 +142,12 @@ function loadDistributionTab() {
                             <h5 class="font-medium text-orange-800 mb-2">📊 Distribution Status</h5>
                             <div class="flex justify-between items-center mb-2">
                                 <span class="text-sm text-orange-700">Target vs Available:</span>
-                                <span class="text-sm font-semibold" id="target-vs-available">100 vs 42</span>
+                                <span class="text-sm font-semibold" id="target-vs-available">100 vs 0</span>
                             </div>
                             <div id="distribution-status">
                                 <div class="flex items-center text-red-700">
                                     <span class="mr-1">⚠️</span>
-                                    <span class="text-sm">Need 58 more bottles</span>
+                                    <span class="text-sm">Need 100 more bottles</span>
                                 </div>
                             </div>
                         </div>
@@ -179,11 +179,11 @@ function loadDistributionTab() {
                         <div class="space-y-1 text-sm">
                             <div class="flex justify-between">
                                 <span>Morning Stock:</span>
-                                <span class="font-semibold" id="morning-stock">42 bottles</span>
+                                <span class="font-semibold" id="morning-stock">0 bottles</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Production Goal:</span>
-                                <span class="font-semibold" id="production-goal">58 bottles</span>
+                                <span class="font-semibold" id="production-goal">100 bottles</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Evening Target:</span>
@@ -197,11 +197,11 @@ function loadDistributionTab() {
                         <div class="space-y-1 text-sm">
                             <div class="flex justify-between">
                                 <span>Days of Stock:</span>
-                                <span class="font-semibold" id="days-of-stock">0.4 days</span>
+                                <span class="font-semibold" id="days-of-stock">0.0 days</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Reorder Status:</span>
-                                <span class="font-semibold text-orange-600" id="reorder-status">Critical</span>
+                                <span class="font-semibold text-red-600" id="reorder-status">Critical</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Safety Stock:</span>
@@ -214,29 +214,6 @@ function loadDistributionTab() {
                 <!-- Quick Actions with Detailed Instructions -->
                 <div class="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     <h5 class="font-medium text-gray-800 mb-3">⚡ Quick M2 - Distribution Actions</h5>
-                    
-                    <!-- Detailed Action Instructions -->
-                    <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h6 class="font-medium text-blue-800 mb-2">📚 How to Use Each Action</h6>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm text-blue-700">
-                            <div>
-                                <div class="font-medium">📊 Record Today's Sales:</div>
-                                <div>Enter actual bottles sold to local businesses and direct customers. System will deduct from current stock using FIFO.</div>
-                            </div>
-                            <div>
-                                <div class="font-medium">📅 Plan Tomorrow:</div>
-                                <div>Calculates optimal production based on current stock, daily target, and capacity limits.</div>
-                            </div>
-                            <div>
-                                <div class="font-medium">📋 Export Report:</div>
-                                <div>Downloads comprehensive distribution report with batch details, channel performance, and analytics.</div>
-                            </div>
-                            <div>
-                                <div class="font-medium">🔄 Refresh Data:</div>
-                                <div>Updates all displays with latest information and recalculates all metrics.</div>
-                            </div>
-                        </div>
-                    </div>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button onclick="recordDailyDistribution()" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded text-sm transition-colors">
@@ -268,9 +245,8 @@ function loadDistributionTab() {
 // Initialize distribution management
 function initializeDistribution() {
     try {
-        // Set initial channel allocation
-        distributionChannels.localBusiness = 60;
-        distributionChannels.directSales = 40;
+        distributionChannels.localBusiness = 100;
+        distributionChannels.directSales = 0;
         
         // Update all distribution displays
         updateDistribution();
@@ -288,10 +264,14 @@ function updateDistribution() {
         const vpotBrewing = inventory.distribution['P004']?.brewing || 0;
         const available = vpotStock + vpotBrewing;
         
-        // Update basic info
-        safeUpdateText('vpot-stock', `${vpotStock} bottles`);
-        safeUpdateText('vpot-brewing', `${vpotBrewing} bottles`);
-        safeUpdateText('vpot-available', `${available} bottles`);
+        // FORCE UPDATE: Update basic info with immediate refresh
+        const stockElement = document.getElementById('vpot-stock');
+        const brewingElement = document.getElementById('vpot-brewing');
+        const availableElement = document.getElementById('vpot-available');
+        
+        if (stockElement) stockElement.textContent = `${vpotStock} bottles`;
+        if (brewingElement) brewingElement.textContent = `${vpotBrewing} bottles`;
+        if (availableElement) availableElement.textContent = `${available} bottles`;
         
         // Update target displays to use universal settings
         safeUpdateText('target-display', `${universalSettings.distributionTarget} bottles/day`);
@@ -319,6 +299,11 @@ function updateDistribution() {
         
         // Update analytics
         updateDistributionAnalytics();
+        
+        // FORCE REFRESH: Trigger a DOM reflow to ensure updates are visible
+        if (stockElement) {
+            stockElement.offsetHeight; // Force reflow
+        }
         
     } catch (error) {
         handleError(error, 'distribution update');
@@ -416,7 +401,7 @@ function updateDistributionAnalytics() {
         safeUpdateText('evening-target', `${target} bottles`);
         
         // Inventory health
-        const daysOfStock = (vpotStock / target).toFixed(1);
+        const daysOfStock = target > 0 ? (vpotStock / target).toFixed(1) : '0.0';
         let reorderStatus = 'Good';
         if (vpotStock < 30) reorderStatus = 'Critical';
         else if (vpotStock < 50) reorderStatus = 'Low';
@@ -433,22 +418,47 @@ function updateDistributionAnalytics() {
 // Record daily distribution
 function recordDailyDistribution() {
     try {
-        const localSold = prompt('Enter bottles sold to local businesses today:');
-        const directSold = prompt('Enter bottles sold directly today:');
+        const currentStock = getTotalStock('distribution', 'P004');
         
-        if (localSold && directSold) {
-            const totalSold = parseInt(localSold) + parseInt(directSold);
+        // Show current stock first
+        const localSold = prompt(`Current stock: ${currentStock} bottles\n\nEnter bottles sold to local businesses today:`);
+        if (!localSold || isNaN(localSold) || parseInt(localSold) < 0) {
+            return;
+        }
+        
+        const directSold = prompt(`Current stock: ${currentStock} bottles\nLocal business: ${localSold} bottles\n\nEnter bottles sold directly today:`);
+        if (!directSold || isNaN(directSold) || parseInt(directSold) < 0) {
+            return;
+        }
+        
+        const localSoldNum = parseInt(localSold);
+        const directSoldNum = parseInt(directSold);
+        const totalSold = localSoldNum + directSoldNum;
+        
+        // Check if we have enough stock
+        if (totalSold > currentStock) {
+            alert(`❌ Not enough stock!\n\nCurrent stock: ${currentStock} bottles\nTrying to sell: ${totalSold} bottles\nShortage: ${totalSold - currentStock} bottles\n\nPlease check your stock levels.`);
+            return;
+        }
+        
+        // Consume stock using FIFO
+        const consumed = consumeStock('distribution', 'P004', totalSold);
+        
+        if (consumed) {
+            alert(`✅ Sales recorded successfully!\n\nTotal sold: ${totalSold} bottles\n• Local Business: ${localSoldNum} bottles\n• Direct Sales: ${directSoldNum} bottles\n\nRemaining stock: ${currentStock - totalSold} bottles`);
             
-            // Consume stock using FIFO
-            const consumed = consumeStock('distribution', 'P004', totalSold);
-            
-            if (consumed) {
-                alert(`Recorded daily sales: ${totalSold} bottles\nLocal Business: ${localSold}\nDirect Sales: ${directSold}`);
-                updateDistribution();
+            // Force update displays
+            updateDistribution();
+            if (typeof updateDashboard === 'function') {
                 updateDashboard();
-            } else {
-                alert('Not enough stock available for the recorded sales!');
             }
+            
+            // Log the sales
+            if (typeof logActivity === 'function') {
+                logActivity('Distribution', `Daily sales recorded: ${totalSold} bottles (Local: ${localSoldNum}, Direct: ${directSoldNum})`);
+            }
+        } else {
+            alert('❌ Error processing sales. Please check stock levels and try again.');
         }
         
     } catch (error) {
@@ -486,7 +496,9 @@ Would you like to set this production amount?
         if (confirm(planMessage)) {
             inventory.distribution['P004'].brewing = recommendedProduction;
             updateDistribution();
-            updateDashboard();
+            if (typeof updateDashboard === 'function') {
+                updateDashboard();
+            }
             alert(`Production plan set: ${recommendedProduction} bottles for tomorrow`);
         }
         
@@ -546,19 +558,11 @@ function exportDistributionReport() {
 function refreshDistributionData() {
     try {
         updateDistribution();
-        updateDashboard();
+        if (typeof updateDashboard === 'function') {
+            updateDashboard();
+        }
         
-        // Show refresh confirmation
-        const message = document.createElement('div');
-        message.textContent = 'M2 - Distribution data refreshed!';
-        message.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50';
-        document.body.appendChild(message);
-        
-        setTimeout(() => {
-            if (document.body.contains(message)) {
-                document.body.removeChild(message);
-            }
-        }, 2000);
+        showNotification('M2 - Distribution data refreshed!', 'success', 2000);
         
     } catch (error) {
         handleError(error, 'distribution data refresh');
@@ -586,6 +590,21 @@ function updateDistributionBrewing(change) {
         const newValue = Math.max(0, Math.min(universalSettings.distributionCapacity, current + change));
         inventory.distribution['P004'].brewing = newValue;
         
+        // IMMEDIATE UPDATE: Force update the display elements
+        const brewingElement = document.getElementById('vpot-brewing');
+        const availableElement = document.getElementById('vpot-available');
+        
+        if (brewingElement) {
+            brewingElement.textContent = `${newValue} bottles`;
+        }
+        
+        if (availableElement) {
+            const currentStock = getTotalStock('distribution', 'P004');
+            const newAvailable = currentStock + newValue;
+            availableElement.textContent = `${newAvailable} bottles`;
+        }
+        
+        // Update other displays
         updateDistribution();
         
         if (typeof updateDashboard === 'function') {
@@ -593,11 +612,6 @@ function updateDistributionBrewing(change) {
         }
         
         showNotification(`M2 - Distribution brewing ${change > 0 ? 'increased' : 'decreased'} by ${Math.abs(change)} bottles`, 'info', 1500);
-        
-        debugLog('Distribution brewing updated', {
-            change: change,
-            newValue: newValue
-        });
         
     } catch (error) {
         handleError(error, 'distribution brewing update');

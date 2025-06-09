@@ -1,4 +1,4 @@
-// Authentication and logging system
+// Authentication and logging system - FIXED VERSION
 
 // Authentication state
 let authState = {
@@ -14,7 +14,7 @@ let activityLog = [];
 // Initialize authentication
 function initializeAuth() {
     // Check if user is already logged in (session persistence)
-    const savedSession = sessionStorage.getItem('tea_inventory_session');
+    const savedSession = localStorage.getItem('tea_inventory_session');
     if (savedSession) {
         try {
             const session = JSON.parse(savedSession);
@@ -30,12 +30,12 @@ function initializeAuth() {
                 return true;
             } else {
                 // Session expired
-                sessionStorage.removeItem('tea_inventory_session');
+                localStorage.removeItem('tea_inventory_session');
                 logActivity('Authentication', 'Session expired');
             }
         } catch (error) {
             console.error('Error parsing saved session:', error);
-            sessionStorage.removeItem('tea_inventory_session');
+            localStorage.removeItem('tea_inventory_session');
         }
     }
     
@@ -48,7 +48,7 @@ function initializeAuth() {
     return true;
 }
 
-// Show login screen
+// FIXED: Show login screen with flexible username and no password requirement
 function showLoginScreen() {
     const loginHTML = `
         <div id="login-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
@@ -62,16 +62,10 @@ function showLoginScreen() {
                 <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <input type="text" id="login-username" value="chamomile-inventory" readonly
-                               class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
-                        <p class="text-xs text-gray-500 mt-1">System username (fixed)</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="login-password" placeholder="No password required - just press Enter"
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Leave empty and press Enter to login</p>
+                        <input type="text" id="login-username" placeholder="Enter your username"
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               required autocomplete="username">
+                        <p class="text-xs text-gray-500 mt-1">Enter any username to identify your session</p>
                     </div>
                     
                     <button type="submit" id="login-button" 
@@ -97,30 +91,46 @@ function showLoginScreen() {
     // Insert login screen
     document.body.insertAdjacentHTML('afterbegin', loginHTML);
     
-    // Focus on password field
+    // Focus on username field
     setTimeout(() => {
-        const passwordField = document.getElementById('login-password');
-        if (passwordField) {
-            passwordField.focus();
+        const usernameField = document.getElementById('login-username');
+        if (usernameField) {
+            usernameField.focus();
         }
     }, 100);
 }
 
-// Handle login
+// FIXED: Handle login with flexible username and no password requirement
 function handleLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username').value.trim();
     
-    // Validate username
-    if (username !== 'chamomile-inventory') {
-        showLoginError('Invalid username. Must be "chamomile-inventory"');
+    // Validate username - must not be empty and must be reasonable length
+    if (!username) {
+        showLoginError('Please enter a username');
         return;
     }
     
-    // No password required - any password (including empty) is accepted
-    authenticateUser(username);
+    if (username.length < 2) {
+        showLoginError('Username must be at least 2 characters long');
+        return;
+    }
+    
+    if (username.length > 50) {
+        showLoginError('Username must be 50 characters or less');
+        return;
+    }
+    
+    // Sanitize username - remove special characters that could cause issues
+    const sanitizedUsername = username.replace(/[<>"/\\&]/g, '');
+    if (sanitizedUsername !== username) {
+        showLoginError('Username contains invalid characters. Please use letters, numbers, spaces, and basic punctuation only.');
+        return;
+    }
+    
+    // Authenticate user with the entered username
+    authenticateUser(sanitizedUsername);
 }
 
 // Authenticate user
@@ -130,12 +140,12 @@ function authenticateUser(username) {
         authState.username = username;
         authState.loginTime = Date.now();
         
-        // Save session
+        // Save session with localStorage for persistence across sessions
         const sessionData = {
             username: username,
             loginTime: authState.loginTime
         };
-        sessionStorage.setItem('tea_inventory_session', JSON.stringify(sessionData));
+        localStorage.setItem('tea_inventory_session', JSON.stringify(sessionData));
         
         // Log successful login
         logActivity('Authentication', `User "${username}" logged in successfully`);
@@ -184,7 +194,7 @@ function showLoginError(message) {
     }
 }
 
-// Show system info
+// FIXED: Show system info with updated information
 function showSystemInfo() {
     alert(`🍃 Chamomile Oatmilk Tea Inventory System v2.0
 
@@ -192,15 +202,22 @@ function showSystemInfo() {
 🏢 Business Models: M1 (Events) & M2 (Distribution)
 🔐 Authentication: Username-based (no password required)
 📱 Responsive: Full mobile support
-💾 Data: Client-side storage with backup options
+💾 Data: Client-side storage with automatic saving
 
 Features:
 • Advanced batch tracking with 7-day shelf life
 • Smart quantity recommendations with historical data
 • Dual business model management (Events & Distribution)
 • Real-time alerts and expiration monitoring
-• Google Sheets integration for analytics
+• CSV export capabilities for data analysis
 • Complete audit trail and activity logging
+• Automatic data persistence between sessions
+
+Authentication:
+• Enter any username to identify your session
+• No password required for ease of use
+• Sessions persist for 24 hours
+• All activity is logged with your username
 
 Build: ${new Date().toISOString().split('T')[0]}
 Browser: ${navigator.userAgent.split(' ')[0]}`);
@@ -208,26 +225,27 @@ Browser: ${navigator.userAgent.split(' ')[0]}`);
 
 // Logout function
 function logout() {
-    if (confirm('Are you sure you want to logout? Any unsaved changes will be lost.')) {
+    if (confirm('Are you sure you want to logout? All data will be saved automatically.')) {
         try {
             // Log logout activity
             logActivity('Authentication', `User "${authState.username}" logged out`);
             
-            // Clear authentication state
+            // Clear authentication state but keep data saved
             authState.isAuthenticated = false;
+            const oldUsername = authState.username;
             authState.username = null;
             authState.loginTime = null;
             
             // Clear session storage
-            sessionStorage.removeItem('tea_inventory_session');
+            localStorage.removeItem('tea_inventory_session');
             
             // Show logout notification
-            showNotification('Successfully logged out', 'info', 2000);
+            showNotification(`${oldUsername} logged out successfully. Data has been saved.`, 'info', 3000);
             
             // Reload page to show login screen
             setTimeout(() => {
                 location.reload();
-            }, 2000);
+            }, 3000);
             
         } catch (error) {
             console.error('Logout error:', error);
@@ -317,6 +335,13 @@ function loadActivityLog() {
                     </div>
                 </div>
                 
+                <!-- Export Log Button -->
+                <div class="mb-4">
+                    <button onclick="exportActivityLog()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                        📥 Export Activity Log
+                    </button>
+                </div>
+                
                 <!-- Filter Controls -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
@@ -351,12 +376,9 @@ function loadActivityLog() {
                                class="w-full p-2 border rounded-lg" onkeyup="filterActivityLog()">
                     </div>
                     
-                    <div class="flex items-end space-x-2">
-                        <button onclick="exportActivityLog()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
-                            📥 Export Log
-                        </button>
-                        <button onclick="clearActivityLog()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-                            🗑️ Clear
+                    <div class="flex items-end">
+                        <button onclick="clearActivityLog()" class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+                            🗑️ Clear Log
                         </button>
                     </div>
                 </div>
@@ -616,6 +638,12 @@ function clearActivityLog() {
             handleError(error, 'activity log clear');
         }
     }
+}
+
+// Load more log entries
+function loadMoreLogEntries() {
+    currentLogPage++;
+    filterActivityLog();
 }
 
 // Add logout button to header (call this after DOM is loaded)
